@@ -12,6 +12,7 @@ export const colors = {
   blue200: "#0064FF",
 
   gray100: "#E1E1E1",
+  gray150: "#E2E2E2",
   gray200: "#727272",
   gray300: "#7A7373",
 
