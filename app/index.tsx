@@ -1,21 +1,15 @@
-import { Link, useRouter } from "expo-router";
-import { StyleSheet, Text, View } from "react-native";
+import DatePickerModal from "@/components/date-piacker-modal";
+import { useRouter } from "expo-router";
+import { useState } from "react";
+import { StyleSheet, View } from "react-native";
 
 export default function HomeScreen() {
   const router = useRouter();
+  const [calendar, setCalendar] = useState();
+
   return (
     <View style={styles.container}>
-      <Text
-        onPress={() => {
-          router.navigate("/settings");
-        }}
-      >
-        Home
-      </Text>
-
-      <Link replace href="/settings">
-        설정으로
-      </Link>
+      <DatePickerModal />
     </View>
   );
 }

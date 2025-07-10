@@ -15,7 +15,7 @@ export default function RootLayout() {
       <Stack.Screen
         name="index"
         options={{
-          headerTitle: "KnR 출석부",
+          headerTitle: "K&R 출석부",
           headerRight: () => {
             return (
               <TouchableOpacity
@@ -38,6 +38,27 @@ export default function RootLayout() {
           headerTitle: "설정",
         }}
       />
+
+      <Stack.Screen
+        name="member"
+        options={{
+          headerTitle: "개인출석",
+        }}
+      />
+
+      <Stack.Screen
+        name="settings/add-member"
+        options={{
+          headerTitle: "팀원 추가",
+        }}
+      />
+
+      <Stack.Screen
+        name="settings/save"
+        options={{
+          headerTitle: "저장",
+        }}
+      />
     </Stack>
   );
 }
@@ -53,8 +74,7 @@ const styles = StyleSheet.create({
     color: colors.white,
   },
   settingsButton: {
-    marginRight: 10,
-    width: 24,
-    height: 24,
+    width: 32,
+    height: 32,
   },
 });
