@@ -16,14 +16,14 @@ export const globalStyles = StyleSheet.create({
 
   roundContainerWhite: {
     backgroundColor: colors.white,
-    borderRadius: 7,
+    borderRadius: 5,
   },
   roundContainerBlue: {
     backgroundColor: colors.blue200,
-    borderRadius: 7,
+    borderRadius: 5,
   },
   roundContainerGray: {
     backgroundColor: colors.gray100,
-    borderRadius: 7,
+    borderRadius: 5,
   },
 });

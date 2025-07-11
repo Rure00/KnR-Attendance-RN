@@ -11,7 +11,9 @@
 
     "ios": {
       "supportsTablet": true,
-      "infoPlist": {}
+      "infoPlist": {
+        "LSApplicationQueriesSchemes": ["tel"]
+      }
     },
     "android": {
       "permissions": [],
