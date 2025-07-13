@@ -1,21 +1,37 @@
+import AttendanceBottomSheet from "@/components/attendance-bottom-sheet";
 import AttendanceRadioButton from "@/components/attendance-radio-button";
 import DatePickerModal from "@/components/date-piacker-modal";
 import MemberItem from "@/components/member-item";
 import { colors } from "@/constants/colors";
 import { globalStyles } from "@/constants/styles";
-import { testMembers } from "@/models/member";
+import { AttendanceStatus } from "@/models/attendace-status";
+import { Member, randomAttendanceMap } from "@/models/member";
 import { dateToDotSeparated } from "@/utils/dateToDotSeparated";
+import BottomSheet from "@gorhom/bottom-sheet";
 import { useRouter } from "expo-router";
-import { useState } from "react";
-import { FlatList, StyleSheet, Text, View } from "react-native";
+import { useCallback, useRef, useState } from "react";
+import { StyleSheet, Text, View } from "react-native";
+import { FlatList } from "react-native-gesture-handler";
 
 export default function HomeScreen() {
   const router = useRouter();
   const [selectedDate, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
 
-  const data = testMembers;
+  const [attendaceRecord, setAttendaceRecord] =
+    useState<Map<Member, AttendanceStatus>>(randomAttendanceMap);
+
+  // randomAttendanceMap  new Map<Member, AttendanceStatus>()
+
   const [selectedStatus, setStaus] = useState(0);
+
+  const [selectedMember, setMember] = useState<Member | null>();
+
+  const bottomRef = useRef<BottomSheet>(null);
+  const handleSheetChanges = useCallback((index: number) => {
+    console.log("handleSheetChanges", index);
+  }, []);
+
   const [sorting, setSorting] = useState<"이름" | "출석" | "">("이름");
 
   return (
@@ -25,9 +41,19 @@ export default function HomeScreen() {
           alignContent: "flex-start",
           gap: 4,
         }}
-        data={data}
+        data={Array.from(attendaceRecord.keys())}
+        keyExtractor={(member: Member, index: number) => {
+          return member.id;
+        }}
         renderItem={({ item }) => (
-          <MemberItem member={item} attendanceStatus="참석" />
+          <MemberItem
+            member={item}
+            attendanceStatus="참석"
+            onPressed={(member) => {
+              setMember(member);
+              bottomRef.current?.expand();
+            }}
+          />
         )}
         ListHeaderComponent={
           <View>
@@ -67,6 +93,18 @@ export default function HomeScreen() {
             <View style={{ height: 10 }} />
           </View>
         }
+        ListEmptyComponent={
+          <Text
+            style={{
+              color: colors.blue100,
+              alignSelf: "center",
+              fontSize: 16,
+              fontWeight: "300",
+            }}
+          >
+            출석을 시작하세요!
+          </Text>
+        }
       />
 
       <DatePickerModal
@@ -81,6 +119,18 @@ export default function HomeScreen() {
           setShowDatePicker(false);
         }}
       />
+
+      {selectedMember && (
+        <AttendanceBottomSheet
+          member={selectedMember!!}
+          status={"참석"}
+          ref={bottomRef}
+          onChange={handleSheetChanges}
+          close={() => {
+            bottomRef.current?.close();
+          }}
+        />
+      )}
     </View>
   );
 }

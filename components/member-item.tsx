@@ -1,12 +1,12 @@
 import { colors } from "@/constants/colors";
 import { globalStyles } from "@/constants/styles";
 import { SCREEN_WIDTH } from "@/constants/window";
+import { AttendanceStatus } from "@/models/attendace-status";
 import { Member } from "@/models/member";
 import { Image, ImageSource } from "expo-image";
 import * as Linking from "expo-linking";
 import { useEffect, useMemo, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
-
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import {
   Gesture,
   GestureDetector,
@@ -20,11 +20,10 @@ import Animated, {
   withSpring,
 } from "react-native-reanimated";
 
-type AttendanceStatus = "참석" | "불참" | "지각" | "무단";
-
 type MemberItemProps = {
   member: Member;
   attendanceStatus: AttendanceStatus;
+  onPressed: (member: Member) => void;
 };
 
 type AttendanceAsset = {
@@ -38,6 +37,7 @@ const DragCompensation = 20;
 export default function MemberItem({
   member,
   attendanceStatus,
+  onPressed,
 }: MemberItemProps) {
   const attendanceLabel: Record<AttendanceStatus, AttendanceAsset> =
     useMemo(() => {
@@ -83,6 +83,8 @@ export default function MemberItem({
 
   const translateX = useSharedValue(0);
   const drag = Gesture.Pan()
+    .activeOffsetY(Number.MAX_SAFE_INTEGER)
+    .activeOffsetX([-10, 10])
     .onChange((event) => {
       const target = clamp(translateX.value + event.changeX, MaxDragOffset, 0);
       translateX.value = withSpring(target, {
@@ -117,17 +119,24 @@ export default function MemberItem({
           <Text style={styles.hiddenText}>통화</Text>
         </View>
 
-        <GestureDetector gesture={drag}>
+        <GestureDetector gesture={drag} touchAction="pan-x">
           <Animated.View
             onLayout={(e) => {
               setHeight(e.nativeEvent.layout.height);
             }}
             style={[styles.topItemContainer, boxAnimatedStyles]}
           >
-            <Image
-              style={styles.label}
-              source={attendanceLabel[attendanceStatus].icon as ImageSource}
-            />
+            <TouchableOpacity
+              onPress={() => {
+                onPressed(member);
+              }}
+            >
+              <Image
+                style={styles.label}
+                source={attendanceLabel[attendanceStatus].icon as ImageSource}
+              />
+            </TouchableOpacity>
+
             <Text style={styles.nameText}>{member.name}</Text>
             <Text
               style={[

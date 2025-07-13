@@ -1,15 +1,15 @@
-export type Position = "GK" | "DF" | "MF" | "FW"
+import { statuses } from "./attendace-status";
 
-export interface Member{
-    id: string,
-    name: string,
-    birt: Date,
-    position: Position[],
-    joinAt: Date,
-    phoneNumber: string
+export type Position = "GK" | "DF" | "MF" | "FW";
+
+export interface Member {
+  id: string;
+  name: string;
+  birt: Date;
+  position: Position[];
+  joinAt: Date;
+  phoneNumber: string;
 }
-
-
 
 export const testMembers: Member[] = [
   {
@@ -44,4 +44,56 @@ export const testMembers: Member[] = [
     joinAt: new Date("2020-01-15"),
     phoneNumber: "010-4567-8901",
   },
+  {
+    id: "5",
+    name: "황희찬",
+    birt: new Date("1996-01-26"),
+    position: ["FW"],
+    joinAt: new Date("2023-04-12"),
+    phoneNumber: "010-5678-9012",
+  },
+  {
+    id: "6",
+    name: "정우영",
+    birt: new Date("1999-09-20"),
+    position: ["MF"],
+    joinAt: new Date("2021-06-30"),
+    phoneNumber: "010-6789-0123",
+  },
+  {
+    id: "7",
+    name: "백승호",
+    birt: new Date("1997-03-17"),
+    position: ["MF"],
+    joinAt: new Date("2022-08-21"),
+    phoneNumber: "010-7890-1234",
+  },
+  {
+    id: "8",
+    name: "김승규",
+    birt: new Date("1990-09-30"),
+    position: ["GK"],
+    joinAt: new Date("2019-05-10"),
+    phoneNumber: "010-8901-2345",
+  },
+  {
+    id: "9",
+    name: "권창훈",
+    birt: new Date("1994-06-30"),
+    position: ["MF"],
+    joinAt: new Date("2020-11-03"),
+    phoneNumber: "010-9012-3456",
+  },
+  {
+    id: "10",
+    name: "홍철",
+    birt: new Date("1990-09-17"),
+    position: ["DF"],
+    joinAt: new Date("2018-04-27"),
+    phoneNumber: "010-0123-4567",
+  },
 ];
+
+export const randomAttendanceMap = new Map(
+  testMembers.map((member) => [member, statuses[Math.floor(Math.random() * statuses.length)]] as const)
+);
