@@ -31,6 +31,7 @@ export default function AttendanceRadioButton({
           onPress={() => {
             onClick(index);
           }}
+          key={index}
         >
           <Text
             style={

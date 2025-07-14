@@ -4,12 +4,12 @@ import DatePickerModal from "@/components/date-piacker-modal";
 import MemberItem from "@/components/member-item";
 import { colors } from "@/constants/colors";
 import { globalStyles } from "@/constants/styles";
-import { AttendanceStatus } from "@/models/attendace-status";
+import { AttendanceStatus, statuses } from "@/models/attendace-status";
 import { Member, randomAttendanceMap } from "@/models/member";
 import { dateToDotSeparated } from "@/utils/dateToDotSeparated";
 import BottomSheet from "@gorhom/bottom-sheet";
 import { useRouter } from "expo-router";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { FlatList } from "react-native-gesture-handler";
 
@@ -18,8 +18,13 @@ export default function HomeScreen() {
   const [selectedDate, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
 
-  const [attendaceRecord, setAttendaceRecord] =
+  const [attendanceRecord, setAttendaceRecord] =
     useState<Map<Member, AttendanceStatus>>(randomAttendanceMap);
+  const memberArray = useMemo(() => {
+    return Array.from(attendanceRecord.keys()).filter((it) => {
+      return it != undefined;
+    });
+  }, [attendanceRecord]);
 
   // randomAttendanceMap  new Map<Member, AttendanceStatus>()
 
@@ -29,10 +34,12 @@ export default function HomeScreen() {
 
   const bottomRef = useRef<BottomSheet>(null);
   const handleSheetChanges = useCallback((index: number) => {
-    console.log("handleSheetChanges", index);
+    const newRecord = new Map(attendanceRecord);
+    newRecord.set(selectedMember!!, statuses[index]);
+    setAttendaceRecord(newRecord);
   }, []);
 
-  const [sorting, setSorting] = useState<"이름" | "출석" | "">("이름");
+  const [sorting, setSorting] = useState<"이름" | "출석">("이름");
 
   return (
     <View style={styles.background}>
@@ -41,17 +48,23 @@ export default function HomeScreen() {
           alignContent: "flex-start",
           gap: 4,
         }}
-        data={Array.from(attendaceRecord.keys())}
-        keyExtractor={(member: Member, index: number) => {
-          return member.id;
-        }}
+        data={memberArray}
+        keyExtractor={(member) => member.id}
         renderItem={({ item }) => (
           <MemberItem
             member={item}
-            attendanceStatus="참석"
+            attendanceStatus={attendanceRecord.get(item)!!}
             onPressed={(member) => {
-              setMember(member);
-              bottomRef.current?.expand();
+              try {
+                setMember(member);
+                bottomRef.current?.expand();
+              } catch (e) {
+                if (e instanceof Error) {
+                  console.log(`Stack: ${e.stack}`);
+                } else {
+                  console.log("Unknown error", e);
+                }
+              }
             }}
           />
         )}
@@ -123,7 +136,7 @@ export default function HomeScreen() {
       {selectedMember && (
         <AttendanceBottomSheet
           member={selectedMember!!}
-          status={"참석"}
+          status={attendanceRecord.get(selectedMember!!)!!}
           ref={bottomRef}
           onChange={handleSheetChanges}
           close={() => {

@@ -1,16 +1,16 @@
 import { colors } from "@/constants/colors";
-import { globalStyles } from "@/constants/styles";
 import { SCREEN_WIDTH } from "@/constants/window";
 import { AttendanceStatus } from "@/models/attendace-status";
 import { Member } from "@/models/member";
 import { Image, ImageSource } from "expo-image";
 import * as Linking from "expo-linking";
 import { useEffect, useMemo, useState } from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import {
   Gesture,
   GestureDetector,
   GestureHandlerRootView,
+  Pressable,
 } from "react-native-gesture-handler";
 import Animated, {
   clamp,
@@ -119,35 +119,40 @@ export default function MemberItem({
           <Text style={styles.hiddenText}>통화</Text>
         </View>
 
-        <GestureDetector gesture={drag} touchAction="pan-x">
-          <Animated.View
-            onLayout={(e) => {
-              setHeight(e.nativeEvent.layout.height);
-            }}
-            style={[styles.topItemContainer, boxAnimatedStyles]}
-          >
-            <TouchableOpacity
-              onPress={() => {
-                onPressed(member);
+        <Pressable
+          onPress={() => {
+            onPressed(member);
+          }}
+          style={({ pressed }) => [
+            {
+              backgroundColor: pressed ? "#dddddd" : "white",
+            },
+          ]}
+        >
+          <GestureDetector gesture={drag} touchAction="pan-x">
+            <Animated.View
+              onLayout={(e) => {
+                setHeight(e.nativeEvent.layout.height);
               }}
+              style={[styles.topItemContainer, boxAnimatedStyles]}
             >
               <Image
                 style={styles.label}
                 source={attendanceLabel[attendanceStatus].icon as ImageSource}
               />
-            </TouchableOpacity>
 
-            <Text style={styles.nameText}>{member.name}</Text>
-            <Text
-              style={[
-                styles.statusText,
-                { color: attendanceLabel[attendanceStatus].color },
-              ]}
-            >
-              {attendanceStatus}
-            </Text>
-          </Animated.View>
-        </GestureDetector>
+              <Text style={styles.nameText}>{member.name}</Text>
+              <Text
+                style={[
+                  styles.statusText,
+                  { color: attendanceLabel[attendanceStatus].color },
+                ]}
+              >
+                {attendanceStatus}
+              </Text>
+            </Animated.View>
+          </GestureDetector>
+        </Pressable>
       </View>
     </GestureHandlerRootView>
   );
@@ -180,16 +185,19 @@ const styles = StyleSheet.create({
     width: 20,
   },
 
-  topItemContainer: StyleSheet.flatten([
-    globalStyles.containerWhite,
-    {
-      flexDirection: "row",
-      alignItems: "center",
-      paddingVertical: 14,
-      paddingHorizontal: 17,
-      gap: 10,
-    },
-  ]),
+  touchRipple: {
+    backgroundColor: "rgb(1, 11, 24)",
+    borderWidth: 1,
+    zIndex: 0.5,
+  },
+
+  topItemContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 14,
+    paddingHorizontal: 17,
+    gap: 10,
+  },
   nameText: {
     color: colors.black,
     fontWeight: 500,
