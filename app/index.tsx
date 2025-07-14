@@ -7,6 +7,10 @@ import { globalStyles } from "@/constants/styles";
 import { AttendanceStatus, statuses } from "@/models/attendace-status";
 import { Member, randomAttendanceMap } from "@/models/member";
 import { dateToDotSeparated } from "@/utils/dateToDotSeparated";
+import {
+  memberAttendanceStatusSorting,
+  memberNameSorting,
+} from "@/utils/member-sorting";
 import BottomSheet from "@gorhom/bottom-sheet";
 import { useRouter } from "expo-router";
 import { useCallback, useMemo, useRef, useState } from "react";
@@ -18,13 +22,21 @@ export default function HomeScreen() {
   const [selectedDate, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
 
+  const [sorting, setSorting] = useState<"이름" | "출석">("이름");
+
   const [attendanceRecord, setAttendaceRecord] =
     useState<Map<Member, AttendanceStatus>>(randomAttendanceMap);
   const memberArray = useMemo(() => {
-    return Array.from(attendanceRecord.keys()).filter((it) => {
+    const array = Array.from(attendanceRecord.keys()).filter((it) => {
       return it != undefined;
     });
-  }, [attendanceRecord]);
+
+    if (sorting == "이름") {
+      return memberNameSorting(array);
+    } else {
+      return memberAttendanceStatusSorting(attendanceRecord);
+    }
+  }, [attendanceRecord, sorting]);
 
   // randomAttendanceMap  new Map<Member, AttendanceStatus>()
 
@@ -38,8 +50,6 @@ export default function HomeScreen() {
     newRecord.set(selectedMember!!, statuses[index]);
     setAttendaceRecord(newRecord);
   }, []);
-
-  const [sorting, setSorting] = useState<"이름" | "출석">("이름");
 
   return (
     <View style={styles.background}>
