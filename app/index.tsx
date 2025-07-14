@@ -24,23 +24,57 @@ export default function HomeScreen() {
 
   const [sorting, setSorting] = useState<"이름" | "출석">("이름");
 
+  const [attendaceFilter, setAttendaceFilter] = useState(0);
+
   const [attendanceRecord, setAttendaceRecord] =
     useState<Map<Member, AttendanceStatus>>(randomAttendanceMap);
+
   const memberArray = useMemo(() => {
-    const array = Array.from(attendanceRecord.keys()).filter((it) => {
-      return it != undefined;
-    });
+    const filterArray = ["전체", "참석", "불참", "지각", "무단"];
+    const array = Array.from(attendanceRecord.keys())
+      .filter((it) => {
+        return it != undefined;
+      })
+      .filter((it) => {
+        if (attendaceFilter == 0) return true;
+        return attendanceRecord.get(it) == filterArray[attendaceFilter];
+      });
 
     if (sorting == "이름") {
       return memberNameSorting(array);
     } else {
       return memberAttendanceStatusSorting(attendanceRecord);
     }
-  }, [attendanceRecord, sorting]);
+  }, [attendanceRecord, sorting, attendaceFilter]);
+
+  const attendanceNumber = useMemo(() => {
+    const values = Array.from(attendanceRecord.values()).filter(
+      (it) => it != undefined
+    );
+
+    const result: [number, number, number, number, number] = [0, 0, 0, 0, 0];
+    result[0] = values.length;
+
+    values.forEach((it) => {
+      switch (it) {
+        case "참석":
+          result[1]++;
+          break;
+        case "불참":
+          result[2]++;
+          break;
+        case "지각":
+          result[3]++;
+          break;
+        case "무단":
+          result[4]++;
+          break;
+      }
+    });
+    return result;
+  }, [attendanceRecord]);
 
   // randomAttendanceMap  new Map<Member, AttendanceStatus>()
-
-  const [selectedStatus, setStaus] = useState(0);
 
   const [selectedMember, setMember] = useState<Member | null>();
 
@@ -90,10 +124,10 @@ export default function HomeScreen() {
                 {dateToDotSeparated(selectedDate)}
               </Text>
               <AttendanceRadioButton
-                values={[10, 5, 2, 2, 1]}
-                selectedIndex={selectedStatus}
+                values={attendanceNumber}
+                selectedIndex={attendaceFilter}
                 onClick={(index) => {
-                  setStaus(index);
+                  setAttendaceFilter(index);
                 }}
               />
             </View>
