@@ -4,7 +4,7 @@ import DatePickerModal from "@/components/date-piacker-modal";
 import MemberItem from "@/components/member-item";
 import { colors } from "@/constants/colors";
 import { globalStyles } from "@/constants/styles";
-import { AttendanceStatus, statuses } from "@/models/attendace-status";
+import { AttendanceStatus } from "@/models/attendace-status";
 import { Member, randomAttendanceMap } from "@/models/member";
 import { dateToDotSeparated } from "@/utils/dateToDotSeparated";
 import {
@@ -74,16 +74,20 @@ export default function HomeScreen() {
     return result;
   }, [attendanceRecord]);
 
-  // randomAttendanceMap  new Map<Member, AttendanceStatus>()
-
   const [selectedMember, setMember] = useState<Member | null>();
 
   const bottomRef = useRef<BottomSheet>(null);
-  const handleSheetChanges = useCallback((index: number) => {
-    const newRecord = new Map(attendanceRecord);
-    newRecord.set(selectedMember!!, statuses[index]);
-    setAttendaceRecord(newRecord);
+  const handleSheetChanges = useCallback((status: AttendanceStatus) => {
+    setAttendaceRecord(new Map(attendanceRecord.set(selectedMember!!, status)));
   }, []);
+
+  console.log("--------------------------------------------------");
+  // memberArray.forEach((member) => {
+  //   console.log(`${member != undefined ? member.name : "undfined"}`);
+  // });
+  console.log(
+    `${selectedMember != undefined ? selectedMember.name : "undfined"}`
+  );
 
   return (
     <View style={styles.background}>
@@ -182,7 +186,9 @@ export default function HomeScreen() {
           member={selectedMember!!}
           status={attendanceRecord.get(selectedMember!!)!!}
           ref={bottomRef}
-          onChange={handleSheetChanges}
+          onItemPressed={(status) => {
+            handleSheetChanges(status);
+          }}
           close={() => {
             bottomRef.current?.close();
           }}

@@ -8,14 +8,20 @@ import BottomSheet, {
 import { BottomSheetMethods } from "@gorhom/bottom-sheet/lib/typescript/types";
 import { Image, ImageSource } from "expo-image";
 import { Ref, useCallback, useMemo } from "react";
-import { FlatList, StyleSheet, Text, View } from "react-native";
+import {
+  FlatList,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type AttendanceBottomSheetProps = {
   member: Member;
   status: AttendanceStatus;
   ref: Ref<BottomSheetMethods>;
-  onChange: (status: number) => void;
+  onItemPressed: (status: AttendanceStatus) => void;
   close: () => void;
 };
 
@@ -28,7 +34,7 @@ export default function AttendanceBottomSheet({
   member,
   status,
   ref,
-  onChange,
+  onItemPressed,
   close,
 }: AttendanceBottomSheetProps) {
   const insets = useSafeAreaInsets();
@@ -77,7 +83,6 @@ export default function AttendanceBottomSheet({
     <BottomSheet
       style={styles.bottomSheetDecoration}
       ref={ref}
-      onChange={onChange}
       enableDynamicSizing={true}
       enablePanDownToClose={true}
       backdropComponent={renderBackdrop}
@@ -98,6 +103,7 @@ export default function AttendanceBottomSheet({
               <ItemView
                 status={item.status}
                 asset={attendanceLabel[item.status]}
+                onItemPressed={onItemPressed}
                 isSelected={status === item.status}
               />
             )}
@@ -111,20 +117,27 @@ export default function AttendanceBottomSheet({
 type ItemProps = {
   status: AttendanceStatus;
   asset: AttendanceAsset;
+  onItemPressed: (status: AttendanceStatus) => void;
   isSelected: boolean;
 };
-function ItemView({ status, asset, isSelected }: ItemProps) {
+function ItemView({ status, asset, onItemPressed, isSelected }: ItemProps) {
   return (
-    <View style={styles.itemContainer}>
-      <Image style={styles.statusIcon} source={asset.icon as ImageSource} />
-      <Text style={styles.itemText}>{status}</Text>
-      {isSelected && (
-        <Image
-          style={[styles.checkIcon, { marginLeft: "auto" }]}
-          source={require("@/assets/images/check-icon.png")}
-        />
-      )}
-    </View>
+    <TouchableOpacity
+      onPress={() => {
+        onItemPressed(status);
+      }}
+    >
+      <View style={styles.itemContainer}>
+        <Image style={styles.statusIcon} source={asset.icon as ImageSource} />
+        <Text style={styles.itemText}>{status}</Text>
+        {isSelected && (
+          <Image
+            style={[styles.checkIcon, { marginLeft: "auto" }]}
+            source={require("@/assets/images/check-icon.png")}
+          />
+        )}
+      </View>
+    </TouchableOpacity>
   );
 }
 
