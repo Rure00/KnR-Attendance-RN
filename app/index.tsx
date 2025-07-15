@@ -4,7 +4,7 @@ import DatePickerModal from "@/components/date-piacker-modal";
 import MemberItem from "@/components/member-item";
 import { colors } from "@/constants/colors";
 import { globalStyles } from "@/constants/styles";
-import { AttendanceStatus } from "@/models/attendace-status";
+import { AttendanceStatus, statuses } from "@/models/attendace-status";
 import { Member, randomAttendanceMap } from "@/models/member";
 import { dateToDotSeparated } from "@/utils/dateToDotSeparated";
 import {
@@ -168,7 +168,9 @@ export default function HomeScreen() {
               fontWeight: "300",
             }}
           >
-            출석을 시작하세요!
+            {attendanceRecord.size == 0
+              ? `출석을 시작하세요!`
+              : `${statuses[attendaceFilter - 1]} 없음`}
           </Text>
         }
       />
