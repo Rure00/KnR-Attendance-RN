@@ -13,11 +13,12 @@ import {
 } from "@/utils/member-sorting";
 import BottomSheet from "@gorhom/bottom-sheet";
 import { useRouter } from "expo-router";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { FlatList } from "react-native-gesture-handler";
 
 export default function HomeScreen() {
+  console.log("--------------------------------------------------");
   const router = useRouter();
   const [selectedDate, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -29,8 +30,21 @@ export default function HomeScreen() {
   const [attendanceRecord, setAttendaceRecord] =
     useState<Map<Member, AttendanceStatus>>(randomAttendanceMap);
 
+  const [selectedMember, setMember] = useState<Member | null>();
+
+  console.log(
+    `selectedMember: ${
+      selectedMember != undefined ? selectedMember.name : "undfined"
+    }`
+  );
+
   const memberArray = useMemo(() => {
     const filterArray = ["전체", "참석", "불참", "지각", "무단"];
+
+    Array.from(attendanceRecord.keys()).forEach((it) => {
+      console.log(`${it != undefined ? it.name : "undfined"}`);
+    });
+
     const array = Array.from(attendanceRecord.keys())
       .filter((it) => {
         return it != undefined;
@@ -74,20 +88,11 @@ export default function HomeScreen() {
     return result;
   }, [attendanceRecord]);
 
-  const [selectedMember, setMember] = useState<Member | null>();
-
   const bottomRef = useRef<BottomSheet>(null);
-  const handleSheetChanges = useCallback((status: AttendanceStatus) => {
+  const handleSheetChanges = (status: AttendanceStatus) => {
+    console.log(`SetStatus: ${selectedMember?.name} to ${status}`);
     setAttendaceRecord(new Map(attendanceRecord.set(selectedMember!!, status)));
-  }, []);
-
-  console.log("--------------------------------------------------");
-  // memberArray.forEach((member) => {
-  //   console.log(`${member != undefined ? member.name : "undfined"}`);
-  // });
-  console.log(
-    `${selectedMember != undefined ? selectedMember.name : "undfined"}`
-  );
+  };
 
   return (
     <View style={styles.background}>
