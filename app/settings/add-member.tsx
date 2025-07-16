@@ -1,11 +1,14 @@
-import DatePickerModal from "@/components/date-piacker-modal";
+import CustomTextInput from "@/components/input-text";
+import { useKeyboardHeight } from "@/components/keyboard-state";
+import { colors } from "@/constants/colors";
 import { useState } from "react";
-import { Button, StyleSheet, Text, TextInput, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
 const steps = [
-  { key: "name", type: "text", label: "이름을 입력해주세요" },
+  { key: "name", type: "text", label: "이름을 " },
   { key: "birth", type: "date", label: "생년월일을 선택해주세요" },
   { key: "joinAt", type: "date", label: "입단일을 선택해주세요" },
+
   {
     key: "position",
     type: "radio",
@@ -15,112 +18,56 @@ const steps = [
 ];
 
 export default function AddMemberScreen() {
-  const [currentStep, setCurrentStep] = useState(0);
-  const [formData, setFormData] = useState<any>({});
-  const [showDatePicker, setShowDatePicker] = useState(false);
-
-  const current = steps[currentStep];
-
-  const handleNext = () => {
-    if (currentStep < steps.length - 1) {
-      setCurrentStep(currentStep + 1);
-    } else {
-      console.log("✅ 최종 데이터", formData);
-    }
-  };
-
-  const renderInput = () => {
-    switch (current.type) {
-      case "text":
-        return (
-          <TextInput
-            style={styles.input}
-            placeholder={current.label}
-            value={formData[current.key] || ""}
-            onChangeText={(text) =>
-              setFormData({ ...formData, [current.key]: text })
-            }
-          />
-        );
-      case "date":
-        return (
-          <>
-            <Button
-              title={
-                formData[current.key]
-                  ? new Date(formData[current.key]).toDateString()
-                  : current.label
-              }
-              onPress={() => setShowDatePicker(true)}
-            />
-            {showDatePicker && (
-              <DatePickerModal
-                date={new Date()}
-                mode="date"
-                isShow={showDatePicker}
-                onConfirm={(selectedDate: Date) => {
-                  setShowDatePicker(false);
-                  if (selectedDate) {
-                    setFormData({
-                      ...formData,
-                      [current.key]: selectedDate.toISOString(),
-                    });
-                  }
-                }}
-                onCancel={() => {
-                  setShowDatePicker(false);
-                }}
-              />
-            )}
-          </>
-        );
-      case "radio":
-        return (
-          <View style={{ gap: 10 }}>
-            {current.options!!.map((option: string) => (
-              <Button
-                key={option}
-                title={option}
-                color={formData[current.key] === option ? "blue" : "gray"}
-                onPress={() =>
-                  setFormData({ ...formData, [current.key]: option })
-                }
-              />
-            ))}
-          </View>
-        );
-      default:
-        return null;
-    }
-  };
+  const [number, setNumber] = useState<string>("");
+  const keyboardHeight = useKeyboardHeight();
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.label}>{current.label}</Text>
-      {renderInput()}
+    <View style={{ flex: 1 }}>
+      <CustomTextInput
+        value={number}
+        onChange={(text) => setNumber(text)}
+        containerStyle={styles.inputContainer}
+        textStyle={styles.input}
+        labelStyle={styles.label}
+        label={"이름"}
+        placeholder={"이름"}
+      />
 
-      <View style={{ height: 20 }} />
-      <Button title="다음" onPress={handleNext} />
+      <Pressable
+        style={[styles.nextButtonEnabled, { marginBottom: keyboardHeight }]}
+      >
+        <Text style={styles.nextTitleEnabled}>다음</Text>
+      </Pressable>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    padding: 24,
+  inputContainer: {
     flex: 1,
-    justifyContent: "center",
-    backgroundColor: "#fff",
+    paddingVertical: 13,
+    paddingHorizontal: 13,
   },
   label: {
-    fontSize: 18,
-    marginBottom: 16,
+    fontSize: 14,
+    color: colors.blue100,
+    fontWeight: "semibold",
   },
   input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
     padding: 12,
-    fontSize: 16,
+    fontSize: 18,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.blue100,
+  },
+  nextButtonEnabled: {
+    padding: 14,
+    alignItems: "center",
+    backgroundColor: colors.blue100,
+    width: "100%",
+  },
+  nextTitleEnabled: {
+    fontSize: 18,
+    fontWeight: "400",
+    color: colors.white,
   },
 });
