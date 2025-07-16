@@ -1,11 +1,27 @@
 import { colors } from "@/constants/colors";
+import * as Font from "expo-font";
 import { Stack, useRouter } from "expo-router";
+import { useState } from "react";
 import { Image, StyleSheet, TouchableOpacity } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { setCustomText } from "react-native-global-props";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function RootLayout() {
   const router = useRouter();
+  const [fontsLoaded, setfontsLoaded] = useState(false);
+  async function getFont() {
+    await Font.loadAsync({
+      pretendard: require("@/assets/fonts/Pretendard-Regular.ttf"),
+    });
+    setfontsLoaded(true);
+  }
+  const customTextProps = {
+    style: {
+      fontFamily: "pretendard",
+    },
+  };
+  setCustomText(customTextProps);
 
   return (
     // bottomsheet 사용하려면 추가해야함.
@@ -88,8 +104,9 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 22,
-    fontWeight: "semibold",
+    fontWeight: "700",
     color: colors.white,
+    fontFamily: "pretendard",
   },
   settingsButton: {
     width: 32,
