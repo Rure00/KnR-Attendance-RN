@@ -34,7 +34,10 @@ export default function RootLayout() {
                 return (
                   <TouchableOpacity
                     style={{ paddingHorizontal: 10 }}
-                    onPress={() => router.push("/settings")}
+                    onPress={() => {
+                      console.log("Click: Settings");
+                      router.push("/settings");
+                    }}
                   >
                     <Image
                       style={styles.settingsButton}
@@ -47,19 +50,18 @@ export default function RootLayout() {
           />
 
           <Stack.Screen
-            name="settings/index"
-            options={{
-              headerTitle: "설정",
-            }}
-          />
-
-          <Stack.Screen
             name="member"
             options={{
               headerTitle: "개인출석",
             }}
           />
 
+          <Stack.Screen
+            name="settings/index"
+            options={{
+              headerTitle: "설정",
+            }}
+          />
           <Stack.Screen
             name="settings/add-member"
             options={{

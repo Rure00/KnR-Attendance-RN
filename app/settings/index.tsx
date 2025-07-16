@@ -2,13 +2,19 @@ import { colors } from "@/constants/colors";
 import { globalStyles } from "@/constants/styles";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Button, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export default function SettingsScreen() {
   const router = useRouter();
 
   return (
     <View style={[styles.background]}>
+      <Button
+        title="안녕"
+        onPress={() => {
+          console.log("버튼 누름");
+        }}
+      />
       <ItemView
         title="팀원 추가"
         onClick={() => {
