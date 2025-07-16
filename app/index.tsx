@@ -32,19 +32,9 @@ export default function HomeScreen() {
 
   const [selectedMember, setMember] = useState<Member | null>();
 
-  console.log(
-    `selectedMember: ${
-      selectedMember != undefined ? selectedMember.name : "undfined"
-    }`
-  );
-
   const memberArray = useMemo(() => {
     const filterArray = ["전체", "참석", "불참", "지각", "무단"];
-
-    Array.from(attendanceRecord.keys()).forEach((it) => {
-      console.log(`${it != undefined ? it.name : "undfined"}`);
-    });
-
+    
     const array = Array.from(attendanceRecord.keys())
       .filter((it) => {
         return it != undefined;

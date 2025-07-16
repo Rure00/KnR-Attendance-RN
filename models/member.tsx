@@ -1,6 +1,12 @@
 import { statuses } from "./attendace-status";
 
 export type Position = "GK" | "DF" | "MF" | "FW";
+export const positions: [Position, Position, Position, Position] = [
+  "GK",
+  "DF",
+  "MF",
+  "FW",
+];
 
 export interface Member {
   id: string;
@@ -100,4 +106,3 @@ export const randomAttendanceMap = new Map(
       [member, statuses[Math.floor(Math.random() * statuses.length)]] as const
   )
 );
-

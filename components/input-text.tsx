@@ -9,40 +9,36 @@ import {
   ViewStyle,
 } from "react-native";
 
-type TextInputProp = {
-  value: string;
-  onChange: (text: string) => void;
-
-  containerStyle: StyleProp<ViewStyle>;
-  textStyle: StyleProp<TextStyle>;
-  labelStyle: StyleProp<TextStyle> | null;
-
-  placeholder: string | null;
-  label: string | null;
+type TextInputProps = React.ComponentProps<typeof TextInput> & {
+  containerStyle?: StyleProp<ViewStyle>;
+  labelStyle?: StyleProp<TextStyle>;
+  label?: string;
 };
 
 export default function CustomTextInput({
-  value,
-  onChange,
   containerStyle,
-  textStyle,
   labelStyle,
-  placeholder,
   label,
-}: TextInputProp) {
+  style,
+  value,
+  ...rest
+}: TextInputProps) {
   return (
     <View style={containerStyle}>
-      {label && <Text style={[labelStyle]}>이름</Text>}
+      {value && label && <Text style={[labelStyle]}>{label}</Text>}
       <TextInput
-        style={[textStyle, { paddingHorizontal: 0, paddingVertical: 10 }]}
-        onChangeText={(text) => onChange(text)}
+        {...rest}
+        style={[style, styles.inputContainer]}
         value={value}
-        placeholder={placeholder ?? ""}
-        keyboardType="numeric"
-        cursorColor={colors.blue100}
       />
     </View>
   );
 }
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  inputContainer: {
+    borderBottomColor: colors.blue100,
+    paddingHorizontal: 0,
+    paddingVertical: 10,
+  },
+});
