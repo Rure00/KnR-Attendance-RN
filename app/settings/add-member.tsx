@@ -5,11 +5,12 @@ import CustomRadioButton from "@/components/radio-button";
 import { colors } from "@/constants/colors";
 import { Member, Position, positions } from "@/models/member";
 import { dateToDotSeparated } from "@/utils/dateToDotSeparated";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 export default function AddMemberScreen() {
   const keyboardHeight = useKeyboardHeight();
+  const refInput = useRef(null);
 
   const [currentStep, setCurrentStep] = useState(0);
 
@@ -32,21 +33,36 @@ export default function AddMemberScreen() {
     (currentStep < 1 || phoneNumber.length === 11) &&
     (currentStep < 4 || position.some((it) => it === true));
 
-  if (currentStep >= 5) {
-    const selectedPosition = position
-      .map((isSelected, index) => (isSelected ? positions[index] : null))
-      .filter((pos): pos is Position => pos !== null);
+  useEffect(() => {
+    switch (currentStep) {
+      case 5: {
+        const selectedPosition = position
+          .map((isSelected, index) => (isSelected ? positions[index] : null))
+          .filter((pos): pos is Position => pos !== null);
 
-    const newMemberCreated: Omit<Member, "id"> = {
-      name: name,
-      birth: birth,
-      phoneNumber: phoneNumber,
-      joinAt: joinAt,
-      position: selectedPosition,
-    };
+        const newMemberCreated: Omit<Member, "id"> = {
+          name: name,
+          birth: birth,
+          phoneNumber: phoneNumber,
+          joinAt: joinAt,
+          position: selectedPosition,
+        };
 
-    console.log(`New Member Craeted!) ${newMemberCreated.name}`);
-  }
+        console.log(`New Member Craeted!) ${newMemberCreated.name}`);
+        break;
+      }
+      case 2: {
+        setShowBirthPicker(true);
+        break;
+      }
+      case 3: {
+        setShowJoinAtPicker(true);
+        break;
+      }
+      default: {
+      }
+    }
+  }, [currentStep]);
 
   return (
     <View style={{ flex: 1 }}>
@@ -119,6 +135,7 @@ export default function AddMemberScreen() {
             labelStyle={styles.label}
             label={"휴대폰번호"}
             placeholder={"휴대폰번호"}
+            isFocused={currentStep == 1}
           />
         )}
 
@@ -132,6 +149,7 @@ export default function AddMemberScreen() {
             labelStyle={styles.label}
             label={"이름"}
             placeholder={"이름"}
+            isFocused={currentStep == 0}
           />
         )}
       </View>
