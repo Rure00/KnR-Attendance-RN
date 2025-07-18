@@ -10,9 +10,14 @@ export default function SettingsScreen() {
   return (
     <View style={[styles.background]}>
       <ItemView
-        title="팀원 추가"
+        title="멤버 목록"
         onClick={() => {
-          console.log("팀원 추가로!");
+          router.push("/settings/member-list");
+        }}
+      />
+      <ItemView
+        title="멤버 추가"
+        onClick={() => {
           router.push("/settings/add-member");
         }}
       />
@@ -32,10 +37,7 @@ type ItemViewProps = {
 };
 function ItemView({ title, onClick }: ItemViewProps) {
   return (
-    <TouchableOpacity
-      onPressIn={onClick} // 왜 Android에선 onPress가 작동을 안 하지??
-      style={styles.itemContainer}
-    >
+    <TouchableOpacity onPress={onClick} style={styles.itemContainer}>
       <Text style={styles.itemTitleText}>{title}</Text>
       <Image
         style={styles.arrowImage}

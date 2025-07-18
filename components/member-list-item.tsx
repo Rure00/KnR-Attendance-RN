@@ -1,9 +1,8 @@
 import { colors } from "@/constants/colors";
-import { AttendanceStatus } from "@/models/attendace-status";
 import { Member } from "@/models/member";
-import { Image, ImageSource } from "expo-image";
+import { Image } from "expo-image";
 import * as Linking from "expo-linking";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import {
   Gesture,
@@ -19,25 +18,20 @@ import Animated, {
   withSpring,
 } from "react-native-reanimated";
 
-type MemberItemProps = {
+type MemberListItemProps = {
   member: Member;
-  attendanceStatus: AttendanceStatus;
   onPressed: (member: Member) => void;
-};
-
-type AttendanceAsset = {
-  icon: ReturnType<typeof require>;
-  color: string;
+  doDelete: (member: Member) => void;
 };
 
 const MaxDragOffset = -150;
 const DragCompensation = 20;
 
-export default function MemberItem({
+export default function MemberListItem({
   member,
-  attendanceStatus,
   onPressed,
-}: MemberItemProps) {
+  doDelete,
+}: MemberListItemProps) {
   const [containerHeight, setHeight] = useState(0);
 
   const translateX = useSharedValue(0);
@@ -45,33 +39,19 @@ export default function MemberItem({
     transform: [{ translateX: translateX.value }],
   }));
 
-  const attendanceLabel: Record<AttendanceStatus, AttendanceAsset> =
-    useMemo(() => {
-      return {
-        참석: {
-          icon: require("@/assets/images/check-blue.png"),
-          color: colors.blue200,
-        },
-        불참: {
-          icon: require("@/assets/images/x-green.png"),
-          color: colors.gray200,
-        },
-        지각: {
-          icon: require("@/assets/images/check-green.png"),
-          color: colors.gray200,
-        },
-        무단: {
-          icon: require("@/assets/images/x-red.png"),
-          color: colors.red200,
-        },
-      } as const;
-    }, []);
+  const log = (n: number) => {
+    console.log(`drag: ${n}`);
+  };
 
   const drag = Gesture.Pan()
     .activeOffsetY(Number.MAX_SAFE_INTEGER)
     .activeOffsetX([-10, 10])
     .onChange((event) => {
-      const target = clamp(translateX.value + event.changeX, MaxDragOffset, 0);
+      const target = clamp(
+        translateX.value + event.changeX,
+        MaxDragOffset,
+        -MaxDragOffset
+      );
       translateX.value = withSpring(target, {
         damping: 20,
         stiffness: 1000,
@@ -80,7 +60,11 @@ export default function MemberItem({
     .onEnd((event) => {
       if (MaxDragOffset + DragCompensation > translateX.value) {
         runOnJS(setCall)(true);
+      } else if (-MaxDragOffset - DragCompensation < translateX.value) {
+        runOnJS(doDelete);
       }
+
+      runOnJS(log);
 
       translateX.value = withSpring(0, {
         damping: 40,
@@ -111,45 +95,55 @@ export default function MemberItem({
   return (
     <GestureHandlerRootView>
       <View style={{ position: "relative" }}>
-        <View style={[styles.hiddenContainer, { height: containerHeight }]}>
-          <Image
-            style={styles.hiddenLabel}
-            source={require("@/assets/images/call-icon.png")}
-          />
-          <Text style={styles.hiddenText}>통화</Text>
+        <View style={{ position: "absolute", flexDirection: "row" }}>
+          <View
+            style={[
+              styles.hiddenDeleteContainer,
+              { height: containerHeight, width: "50%" },
+            ]}
+          >
+            <Image
+              style={styles.hiddenLabel}
+              source={require("@/assets/images/delete-icon.png")}
+            />
+            <Text style={styles.hiddenText}>삭제</Text>
+          </View>
+
+          <View
+            style={[
+              styles.hiddenCallContainer,
+              {
+                height: containerHeight,
+                width: "50%",
+                marginLeft: "auto",
+              },
+            ]}
+          >
+            <Image
+              style={styles.hiddenLabel}
+              source={require("@/assets/images/call-icon.png")}
+            />
+            <Text style={styles.hiddenText}>통화</Text>
+          </View>
         </View>
 
         <Pressable
           onPress={() => {
             onPressed(member);
           }}
-          style={({ pressed }) => [
-            {
-              backgroundColor: pressed ? "#dddddd" : "white",
-            },
-          ]}
         >
           <GestureDetector gesture={drag} touchAction="pan-x">
             <Animated.View
               onLayout={(e) => {
                 setHeight(e.nativeEvent.layout.height);
               }}
-              style={[styles.topItemContainer, boxAnimatedStyles]}
+              style={[
+                styles.topItemContainer,
+                boxAnimatedStyles,
+                { backgroundColor: colors.white },
+              ]}
             >
-              <Image
-                style={styles.label}
-                source={attendanceLabel[attendanceStatus].icon as ImageSource}
-              />
-
               <Text style={styles.nameText}>{member.name}</Text>
-              <Text
-                style={[
-                  styles.statusText,
-                  { color: attendanceLabel[attendanceStatus].color },
-                ]}
-              >
-                {attendanceStatus}
-              </Text>
             </Animated.View>
           </GestureDetector>
         </Pressable>
@@ -159,18 +153,22 @@ export default function MemberItem({
 }
 
 const styles = StyleSheet.create({
-  hiddenContainer: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    zIndex: 0,
+  hiddenCallContainer: {
     backgroundColor: colors.blue50,
     flexDirection: "row",
     justifyContent: "flex-end",
     alignItems: "center",
 
     paddingEnd: 40,
+    gap: 8,
+  },
+  hiddenDeleteContainer: {
+    backgroundColor: colors.red100,
+    flexDirection: "row",
+    justifyContent: "flex-start",
+    alignItems: "center",
+
+    paddingStart: 40,
     gap: 8,
   },
   hiddenText: {
@@ -200,6 +198,8 @@ const styles = StyleSheet.create({
     color: colors.black,
     fontWeight: 500,
     fontSize: 18,
+
+    marginStart: 20,
   },
   label: {
     width: 36,

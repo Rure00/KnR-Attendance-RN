@@ -84,11 +84,16 @@ export default function RootLayout() {
               headerTitle: "팀원 추가",
             }}
           />
-
           <Stack.Screen
             name="settings/save"
             options={{
               headerTitle: "저장",
+            }}
+          />
+          <Stack.Screen
+            name="settings/member-list"
+            options={{
+              headerTitle: "멤버 목록",
             }}
           />
         </Stack>
