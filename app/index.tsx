@@ -34,7 +34,7 @@ export default function HomeScreen() {
 
   const memberArray = useMemo(() => {
     const filterArray = ["전체", "참석", "불참", "지각", "무단"];
-    
+
     const array = Array.from(attendanceRecord.keys())
       .filter((it) => {
         return it != undefined;
@@ -97,6 +97,9 @@ export default function HomeScreen() {
           <MemberItem
             member={item}
             attendanceStatus={attendanceRecord.get(item)!!}
+            onLongPress={() => {
+              router.push(`/member-detail/${item.id}`);
+            }}
             onPressed={(member) => {
               try {
                 setMember(member);

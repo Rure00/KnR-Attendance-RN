@@ -23,6 +23,7 @@ type MemberItemProps = {
   member: Member;
   attendanceStatus: AttendanceStatus;
   onPressed: (member: Member) => void;
+  onLongPress: (member: Member) => void;
 };
 
 type AttendanceAsset = {
@@ -37,6 +38,7 @@ export default function MemberItem({
   member,
   attendanceStatus,
   onPressed,
+  onLongPress,
 }: MemberItemProps) {
   const [containerHeight, setHeight] = useState(0);
 
@@ -122,6 +124,9 @@ export default function MemberItem({
         <Pressable
           onPress={() => {
             onPressed(member);
+          }}
+          onLongPress={() => {
+            onLongPress(member);
           }}
           style={({ pressed }) => [
             {

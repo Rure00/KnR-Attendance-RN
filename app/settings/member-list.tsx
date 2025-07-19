@@ -1,10 +1,12 @@
 import MemberListItem from "@/components/member-list-item";
 import { globalStyles } from "@/constants/styles";
 import { Member, testMembers } from "@/models/member";
+import { useRouter } from "expo-router";
 import { useState } from "react";
 import { FlatList, StyleSheet, Text, View } from "react-native";
 
 export default function MemberListScreen() {
+  const router = useRouter();
   const [memberList, setMemberList] = useState<Member[]>(testMembers);
 
   return (
@@ -19,7 +21,7 @@ export default function MemberListScreen() {
           <MemberListItem
             member={item}
             onPressed={() => {
-              console.log(`MemberListScreen: Member Clicked!`);
+              router.push(`/member-detail/${item.id}`);
             }}
             doDelete={() => {
               console.log(`MemberListScreen: Member Do Delete!`);

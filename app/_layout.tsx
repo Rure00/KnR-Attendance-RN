@@ -66,7 +66,7 @@ export default function RootLayout() {
           />
 
           <Stack.Screen
-            name="member"
+            name="member-detail/[id]"
             options={{
               headerTitle: "개인출석",
             }}

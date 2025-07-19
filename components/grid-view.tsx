@@ -7,7 +7,7 @@ type GridViewProps<ItemT> = {
   mainNum: number;
   mainGap?: number;
   crossGap?: number;
-  renderItem: (item: ItemT) => ReactNode;
+  renderItem: (item: ItemT, index: number) => ReactNode;
 };
 
 export default function GridView<ItemT = any>({
@@ -48,7 +48,9 @@ export default function GridView<ItemT = any>({
       {group.map((group, groupIdx) => (
         <View key={groupIdx} style={{ flexDirection: mainAxis, gap: mainGap }}>
           {group.map((item, itemIdx) => (
-            <React.Fragment key={itemIdx}>{renderItem(item)}</React.Fragment>
+            <React.Fragment key={itemIdx}>
+              {renderItem(item, itemIdx)}
+            </React.Fragment>
           ))}
         </View>
       ))}
