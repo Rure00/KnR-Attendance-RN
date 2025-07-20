@@ -3,12 +3,11 @@ import { Member } from "@/models/member";
 import { Image } from "expo-image";
 import * as Linking from "expo-linking";
 import { useEffect, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import {
   Gesture,
   GestureDetector,
   GestureHandlerRootView,
-  Pressable,
 } from "react-native-gesture-handler";
 import Animated, {
   clamp,
@@ -181,12 +180,6 @@ const styles = StyleSheet.create({
     width: 20,
   },
 
-  touchRipple: {
-    backgroundColor: "rgb(1, 11, 24)",
-    borderWidth: 1,
-    zIndex: 0.5,
-  },
-
   topItemContainer: {
     flexDirection: "row",
     alignItems: "center",
@@ -198,8 +191,6 @@ const styles = StyleSheet.create({
     color: colors.black,
     fontWeight: 500,
     fontSize: 18,
-
-    marginStart: 20,
   },
   label: {
     width: 36,

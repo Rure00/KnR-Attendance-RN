@@ -48,6 +48,7 @@ export default function CustomRadioButton({
         {values.map((it, index) => {
           return selectedValues[index] ? (
             <Pressable
+              key={index}
               onPress={() => onClick(index)}
               style={[
                 styles.selectedContainer,
@@ -62,6 +63,7 @@ export default function CustomRadioButton({
             </Pressable>
           ) : (
             <Pressable
+              key={index}
               onPress={() => onClick(index)}
               style={[
                 styles.unSelectedContainer,

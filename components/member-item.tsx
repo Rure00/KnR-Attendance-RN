@@ -4,12 +4,11 @@ import { Member } from "@/models/member";
 import { Image, ImageSource } from "expo-image";
 import * as Linking from "expo-linking";
 import { useEffect, useMemo, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import {
   Gesture,
   GestureDetector,
   GestureHandlerRootView,
-  Pressable,
 } from "react-native-gesture-handler";
 import Animated, {
   clamp,
@@ -110,6 +109,13 @@ export default function MemberItem({
     }
   }, [doCallScreen]);
 
+  const longPressGesture = Gesture.LongPress()
+    .minDuration(400)
+    .onStart(() => {
+      console.log(`hello`);
+    });
+  const composedGesture = Gesture.Simultaneous(drag, longPressGesture);
+
   return (
     <GestureHandlerRootView>
       <View style={{ position: "relative" }}>
@@ -128,11 +134,6 @@ export default function MemberItem({
           onLongPress={() => {
             onLongPress(member);
           }}
-          style={({ pressed }) => [
-            {
-              backgroundColor: pressed ? "#dddddd" : "white",
-            },
-          ]}
         >
           <GestureDetector gesture={drag} touchAction="pan-x">
             <Animated.View
@@ -200,6 +201,8 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 17,
     gap: 10,
+
+    backgroundColor: colors.white,
   },
   nameText: {
     color: colors.black,
