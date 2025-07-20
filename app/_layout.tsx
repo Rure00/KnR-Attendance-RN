@@ -40,6 +40,8 @@ export default function RootLayout() {
           screenOptions={{
             headerStyle: styles.container,
             headerTitleStyle: styles.title,
+            headerBackButtonDisplayMode: "minimal",
+            headerTintColor: colors.white,
           }}
         >
           <Stack.Screen
