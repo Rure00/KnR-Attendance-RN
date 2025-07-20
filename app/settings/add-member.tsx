@@ -10,7 +10,6 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 export default function AddMemberScreen() {
   const keyboardHeight = useKeyboardHeight();
-  const refInput = useRef(null);
 
   const [currentStep, setCurrentStep] = useState(0);
 
