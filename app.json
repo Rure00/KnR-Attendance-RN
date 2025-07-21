@@ -8,8 +8,10 @@
     "scheme": "knrattendance",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+
     "ios": {
       "bundleIdentifier": "com.rure00.KnRAttendance",
+      "googleServicesFile": "./GoogleService-Info.plist",
       "supportsTablet": true,
       "infoPlist": {
         "LSApplicationQueriesSchemes": ["tel"]
@@ -17,6 +19,7 @@
     },
     "android": {
       "permissions": [],
+      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -30,6 +33,15 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
+      "@react-native-firebase/app",
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "useFrameworks": "static"
+          }
+        }
+      ],
       [
         "expo-font",
         {
