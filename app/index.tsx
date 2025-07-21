@@ -4,6 +4,7 @@ import DatePickerModal from "@/components/date-piacker-modal";
 import MemberItem from "@/components/member-item";
 import { colors } from "@/constants/colors";
 import { globalStyles } from "@/constants/styles";
+import { getAllMembers } from "@/firebase/firestore/members";
 import { AttendanceStatus, statuses } from "@/models/attendace-status";
 import { Member, randomAttendanceMap } from "@/models/member";
 import { dateToDotSeparated } from "@/utils/dateToDotSeparated";
@@ -83,6 +84,13 @@ export default function HomeScreen() {
     console.log(`SetStatus: ${selectedMember?.name} to ${status}`);
     setAttendaceRecord(new Map(attendanceRecord.set(selectedMember!!, status)));
   };
+
+  (async () => {
+    console.log(`start firebase`);
+    (await getAllMembers()).forEach((member) => {
+      console.log(`member: ${member.name}`);
+    });
+  })();
 
   return (
     <View style={styles.background}>

@@ -36,8 +36,4 @@ yarn-error.*
 # typescript
 *.tsbuildinfo
 
-# native
-/android
-/ios
-
 app-example
