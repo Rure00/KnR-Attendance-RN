@@ -36,8 +36,8 @@ yarn-error.*
 # typescript
 *.tsbuildinfo
 
-# firebase
-google-services.json
-GoogleService-Info.plist
+# native
+/android
+/ios
 
 app-example
