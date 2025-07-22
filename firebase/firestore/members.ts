@@ -10,7 +10,10 @@ export async function getAllMembers(): Promise<Member[]> {
     const memebers: Member[] = memberDocs.docs.map((doc) => {
       const data = doc.data();
 
-      return data as Member;
+      return {
+        ...(data as Member),
+        id: doc.id,
+      };
     });
 
     return memebers;
@@ -28,7 +31,10 @@ export async function getMemberById(id: string): Promise<Member | undefined> {
       .get();
 
     if (memberDocs.exists()) {
-      return memberDocs.data() as Member;
+      return {
+        ...(memberDocs.data() as Member),
+        id,
+      };
     } else {
       return undefined;
     }
@@ -52,7 +58,8 @@ export async function createNewMember(
 
 export async function updateMember(member: Member): Promise<boolean> {
   try {
-    await firestore().collection(MEMBER_COLLECTION).doc(member.id).set(member);
+    const { id, ...updated } = { ...member };
+    await firestore().collection(MEMBER_COLLECTION).doc(member.id).set(updated);
     return true;
   } catch (e) {
     console.log(e);
