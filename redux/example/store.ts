@@ -13,14 +13,10 @@ const store = configureStore({
     getDefaultMiddleware().prepend(logginMiddleware.middleware),
 });
 
-export function doLogout() {
-  store.dispatch(logout());
-}
+type AppDispatch = typeof store.dispatch;
+type RootState = ReturnType<typeof store.getState>;
 
-export type AppDispatch = typeof store.dispatch;
-export type RootState = ReturnType<typeof store.getState>;
+const useAppDispatch: () => AppDispatch = useDispatch;
+const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
 
-export const useAppDispatch: () => AppDispatch = useDispatch;
-export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
-
-export default store;
+// export default store;
