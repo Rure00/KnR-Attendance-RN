@@ -5,7 +5,7 @@ const ACTIVITY_COLLECTION = "activity";
 const ATTENDANCE_COLLECTION = "attendances";
 const DATE_FILED = `date`;
 
-interface ActivityEntity
+export interface ActivityEntity
   extends Omit<
     Activity,
     "id" | "attended" | "late" | "notAttended" | "unexcused" | "entire"
@@ -96,17 +96,21 @@ export async function getActivityByDate(
 }
 
 export async function createNewActivity(
-  activity: Omit<Activity, "id">
-): Promise<boolean> {
+  activity: Omit<ActivityEntity, "id">
+): Promise<string | undefined> {
   try {
+    const entity: Omit<ActivityEntity, "attendance"> = {
+      ...activity,
+    };
+
     const activityDocs = await firestore()
       .collection(ACTIVITY_COLLECTION)
-      .add(activity);
+      .add(entity);
 
-    return true;
+    return activityDocs.id;
   } catch (e) {
     console.log(`createNewActivity error: ${e}`);
-    return false;
+    return undefined;
   }
 }
 
