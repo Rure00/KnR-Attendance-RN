@@ -1,9 +1,10 @@
 import { Member } from "@/models/member";
 import firestore from "@react-native-firebase/firestore";
+import { Result } from "../result";
 
 const MEMBER_COLLECTION = "member";
 
-export async function getAllMembers(): Promise<Member[]> {
+export async function getAllMembers(): Promise<Result<Member[]>> {
   try {
     const memberDocs = await firestore().collection(MEMBER_COLLECTION).get();
 
@@ -16,14 +17,22 @@ export async function getAllMembers(): Promise<Member[]> {
       };
     });
 
-    return memebers;
+    return {
+      message: "",
+      isSuccess: true,
+      data: memebers,
+    };
   } catch (e) {
     console.log(e);
-    return [];
+    return {
+      message: "",
+      isSuccess: false,
+      data: undefined,
+    };
   }
 }
 
-export async function getMemberById(id: string): Promise<Member | undefined> {
+export async function getMemberById(id: string): Promise<Result<Member>> {
   try {
     const memberDocs = await firestore()
       .collection(MEMBER_COLLECTION)
@@ -31,48 +40,91 @@ export async function getMemberById(id: string): Promise<Member | undefined> {
       .get();
 
     if (memberDocs.exists()) {
-      return {
+      const member = {
         ...(memberDocs.data() as Member),
         id,
+      } as Member;
+
+      return {
+        message: "",
+        isSuccess: true,
+        data: member,
       };
     } else {
-      return undefined;
+      return {
+        message: "",
+        isSuccess: false,
+        data: undefined,
+      };
     }
   } catch (e) {
     console.log(e);
-    return undefined;
+    return {
+      message: "",
+      isSuccess: false,
+      data: undefined,
+    };
   }
 }
 
 export async function createNewMember(
   member: Omit<Member, "id">
-): Promise<boolean> {
+): Promise<Result<Member>> {
   try {
-    await firestore().collection(MEMBER_COLLECTION).add(member);
-    return true;
+    const docRef = await firestore().collection(MEMBER_COLLECTION).add(member);
+    const getMemberResult = await getMemberById(docRef.id);
+
+    return {
+      message: "",
+      isSuccess: true,
+      data: getMemberResult!.data,
+    };
   } catch (e) {
     console.error(e);
-    return false;
+    return {
+      message: "",
+      isSuccess: false,
+      data: undefined,
+    };
   }
 }
 
-export async function updateMember(member: Member): Promise<boolean> {
+export async function updateMember(member: Member): Promise<Result<Member>> {
   try {
     const { id, ...updated } = { ...member };
     await firestore().collection(MEMBER_COLLECTION).doc(member.id).set(updated);
-    return true;
+
+    const getMemberResult = await getMemberById(id);
+
+    return {
+      message: "",
+      isSuccess: true,
+      data: getMemberResult!.data,
+    };
   } catch (e) {
     console.log(e);
-    return false;
+    return {
+      message: "",
+      isSuccess: false,
+      data: undefined,
+    };
   }
 }
 
-export async function deleteMember(member: Member): Promise<boolean> {
+export async function deleteMember(member: Member): Promise<Result<boolean>> {
   try {
     await firestore().collection(MEMBER_COLLECTION).doc(member.id).delete();
-    return true;
+    return {
+      message: "",
+      isSuccess: true,
+      data: true,
+    };
   } catch (e) {
     console.log(e);
-    return false;
+    return {
+      message: "",
+      isSuccess: false,
+      data: undefined,
+    };
   }
 }

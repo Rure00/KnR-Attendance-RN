@@ -1,34 +1,65 @@
 import { AttendanceEntry } from "@/models/activity";
-import { AttendanceStatus } from "@/models/attendace-status";
 import firestore from "@react-native-firebase/firestore";
+import { Result } from "../result";
 import { getActivityById } from "./activities";
-import { getAllMembers } from "./members";
 
 const ACTIVITY_COLLECTION = "activity";
 const ATTENDANCE_COLLECTION = "attendances";
 
 export async function getAttendanceByActivityId(
   activityId: string
-): Promise<Record<string, AttendanceEntry>> {
+): Promise<Result<Record<string, AttendanceEntry>>> {
   try {
-    const activity = await getActivityById(activityId);
-    return activity?.attendance ?? {};
+    const result = await getActivityById(activityId);
+    if (result.isSuccess) {
+      return {
+        message: "",
+        isSuccess: true,
+        data: result.data!.attendance,
+      };
+    } else {
+      return {
+        message: "",
+        isSuccess: false,
+        data: {},
+      };
+    }
   } catch (e) {
     console.log(`getAttendanceByActivityId error: ${e}`);
-    return {};
+    return {
+      message: "",
+      isSuccess: false,
+      data: {},
+    };
   }
 }
 
 export async function getAttendanceOfMember(
   activityId: string,
   memberId: string
-): Promise<AttendanceEntry | undefined> {
+): Promise<Result<AttendanceEntry>> {
   try {
-    const activity = await getActivityById(activityId);
-    return activity?.attendance[memberId];
+    const result = await getActivityById(activityId);
+    if (result.isSuccess) {
+      return {
+        message: "",
+        isSuccess: true,
+        data: result.data!.attendance[memberId],
+      };
+    } else {
+      return {
+        message: "",
+        isSuccess: false,
+        data: undefined,
+      };
+    }
   } catch (e) {
     console.log(`getAttendanceOfMember error: ${e}`);
-    return undefined;
+    return {
+      message: "",
+      isSuccess: false,
+      data: undefined,
+    };
   }
 }
 
@@ -36,7 +67,7 @@ export async function setAttendanceForMember(
   activityId: string,
   memberId: string,
   entry: AttendanceEntry
-): Promise<boolean> {
+): Promise<Result<boolean>> {
   try {
     const attendanceSnapShot = await firestore()
       .collection(ACTIVITY_COLLECTION)
@@ -44,40 +75,17 @@ export async function setAttendanceForMember(
       .collection(ATTENDANCE_COLLECTION)
       .doc(memberId)
       .set(entry);
-    return true;
+    return {
+      message: "",
+      isSuccess: true,
+      data: true,
+    };
   } catch (e) {
     console.log(`setAttendanceForMember error: ${e}`);
-    return false;
-  }
-}
-
-export async function setAttendanceDefault(
-  activityId: string
-): Promise<boolean> {
-  try {
-    const members = await getAllMembers();
-
-    const attendanceEntries = members.map((member) => [
-      member.id,
-      {
-        createdAt: new Date(),
-        status: "불참" as AttendanceStatus,
-      },
-    ]);
-
-    const collections = await firestore()
-      .collection(ACTIVITY_COLLECTION)
-      .doc(activityId)
-      .collection(ATTENDANCE_COLLECTION);
-
-    const batchWrites = Object.entries(attendanceEntries).map(([id, entry]) => {
-      return collections.doc(id).set(entry);
-    });
-    await Promise.all(batchWrites);
-
-    return true;
-  } catch (e) {
-    console.log(`setAttendanceForMember error: ${e}`);
-    return false;
+    return {
+      message: "",
+      isSuccess: false,
+      data: undefined,
+    };
   }
 }

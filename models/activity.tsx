@@ -9,7 +9,6 @@ export interface AttendanceEntry {
 export interface Activity {
   id: string;
   date: Date;
-  note?: string;
   attended: number;
   late: number;
   notAttended: number;
