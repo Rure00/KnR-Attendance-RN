@@ -5,7 +5,7 @@ import {
   getActivityByDate,
   updateActivity,
 } from "@/firebase/firestore/activities";
-import { setAttendanceDefault } from "@/firebase/firestore/attendance";
+import { Result } from "@/firebase/result";
 import { Activity } from "@/models/activity";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 
@@ -26,12 +26,7 @@ export const fetchCreateActivity = createAsyncThunk(
   CREAT_ACTIVITY,
   async (act: ActivityEntity, thunkAPI) => {
     const result = await createNewActivity(act);
-    if (result != undefined) {
-      await setAttendanceDefault(result);
-      return true;
-    } else {
-      return false;
-    }
+    return result;
   }
 );
 
@@ -43,9 +38,9 @@ export const fetchDeleteActivity = createAsyncThunk(
   }
 );
 
-export const fetchUpdateActivity = createAsyncThunk(
+export const fetchUpdateActivity = createAsyncThunk<Result<Activity>, Activity>(
   UPDATE_ACTIVITY,
-  async (activity: Activity, thunkAPI) => {
+  async (activity, thunkAPI) => {
     const response = await updateActivity(activity);
     return response;
   }

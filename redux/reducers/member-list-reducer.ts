@@ -21,7 +21,8 @@ const memberListReducer = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder.addCase(fetchMembers.fulfilled, (state, { payload }) => {
-      state.memberList = payload;
+      if (!payload.isSuccess) return;
+      state.memberList = payload.data!;
     });
     builder.addCase(fetchNewMember.fulfilled, (state, { payload }) => {});
     builder.addCase(fetchUpdateMember.fulfilled, (state, { payload }) => {});
