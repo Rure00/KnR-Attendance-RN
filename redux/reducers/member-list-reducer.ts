@@ -9,10 +9,12 @@ import {
 
 interface MemberListState {
   memberList: Member[];
+  memberRecord: Record<string, Member>;
 }
 
 const initialState: MemberListState = {
   memberList: [],
+  memberRecord: {},
 };
 
 const memberListReducer = createSlice({
@@ -23,6 +25,9 @@ const memberListReducer = createSlice({
     builder.addCase(fetchMembers.fulfilled, (state, { payload }) => {
       if (!payload.isSuccess) return;
       state.memberList = payload.data!;
+      payload.data?.forEach((it) => {
+        state.memberRecord[it.id] = it;
+      });
     });
     builder.addCase(fetchNewMember.fulfilled, (state, { payload }) => {});
     builder.addCase(fetchUpdateMember.fulfilled, (state, { payload }) => {});

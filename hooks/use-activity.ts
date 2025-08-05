@@ -4,7 +4,7 @@ import { useAppDispatch, useAppSelector } from "@/redux/store";
 import { dateToDotSeparated } from "@/utils/dateToDotSeparated";
 import { useEffect } from "react";
 
-export function useActivity(date: Date): Activity | undefined {
+export function useActivity(date: Date): Activity {
   const key = dateToDotSeparated(date);
   const dispatch = useAppDispatch();
 

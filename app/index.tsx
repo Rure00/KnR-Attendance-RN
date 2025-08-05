@@ -4,8 +4,13 @@ import DatePickerModal from "@/components/date-piacker-modal";
 import MemberItem from "@/components/member-item";
 import { colors } from "@/constants/colors";
 import { globalStyles } from "@/constants/styles";
+import { useActivity } from "@/hooks/use-activity";
+import { useAttendance } from "@/hooks/use-attendance";
+import { useMemberRecord } from "@/hooks/use-member-record";
 import { AttendanceStatus, statuses } from "@/models/attendace-status";
-import { Member, randomAttendanceMap } from "@/models/member";
+import { Member } from "@/models/member";
+import { changeAttendance } from "@/redux/reducers/activity-thunk";
+import { useAppDispatch } from "@/redux/store";
 import { dateToDotSeparated } from "@/utils/dateToDotSeparated";
 import {
   memberAttendanceStatusSorting,
@@ -18,49 +23,51 @@ import { StyleSheet, Text, View } from "react-native";
 import { FlatList } from "react-native-gesture-handler";
 
 export default function HomeScreen() {
-  console.log("--------------------------------------------------");
+  console.log("HomeScreen--------------------------------------------------");
   const router = useRouter();
+  const dispatch = useAppDispatch();
+
   const [selectedDate, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
 
   const [sorting, setSorting] = useState<"이름" | "출석">("이름");
-
   const [attendaceFilter, setAttendaceFilter] = useState(0);
 
-  const [attendanceRecord, setAttendaceRecord] =
-    useState<Map<Member, AttendanceStatus>>(randomAttendanceMap);
+  const activity = useActivity(selectedDate);
+  const memberRecord = useMemberRecord();
+  const attendancesRecord = useAttendance(activity);
 
   const [selectedMember, setMember] = useState<Member | null>();
 
   const memberArray = useMemo(() => {
     const filterArray = ["전체", "참석", "불참", "지각", "무단"];
 
-    const array = Array.from(attendanceRecord.keys())
-      .filter((it) => {
-        return it != undefined;
+    const array = Object.entries(memberRecord)
+      .filter(([id, _]) => {
+        if (attendaceFilter === 0) return true;
+
+        const attendance = attendancesRecord[id];
+        return attendance?.status === filterArray[attendaceFilter];
       })
-      .filter((it) => {
-        if (attendaceFilter == 0) return true;
-        return attendanceRecord.get(it) == filterArray[attendaceFilter];
-      });
+      .map(([_, member]) => member);
 
     if (sorting == "이름") {
       return memberNameSorting(array);
     } else {
-      return memberAttendanceStatusSorting(attendanceRecord);
+      return memberAttendanceStatusSorting(memberRecord, attendancesRecord);
     }
-  }, [attendanceRecord, sorting, attendaceFilter]);
+  }, [selectedDate, activity, sorting, attendaceFilter]);
 
   const attendanceNumber = useMemo(() => {
-    const values = Array.from(attendanceRecord.values()).filter(
-      (it) => it != undefined
+    const values = Object.entries(attendancesRecord).map(
+      ([id, attendanceEntry]) => attendanceEntry
     );
 
     const result: [number, number, number, number, number] = [0, 0, 0, 0, 0];
     result[0] = values.length;
 
     values.forEach((it) => {
-      switch (it) {
+      switch (it.status) {
         case "참석":
           result[1]++;
           break;
@@ -76,12 +83,24 @@ export default function HomeScreen() {
       }
     });
     return result;
-  }, [attendanceRecord]);
+  }, [attendancesRecord]);
 
   const bottomRef = useRef<BottomSheet>(null);
   const handleSheetChanges = (status: AttendanceStatus) => {
     console.log(`SetStatus: ${selectedMember?.name} to ${status}`);
-    setAttendaceRecord(new Map(attendanceRecord.set(selectedMember!!, status)));
+
+    const before = attendancesRecord[selectedMember!.id];
+
+    dispatch(
+      changeAttendance({
+        activityId: activity.id,
+        userId: selectedMember!.id,
+        attendanceEntry: {
+          ...before,
+          status,
+        },
+      })
+    );
   };
 
   return (
@@ -96,7 +115,7 @@ export default function HomeScreen() {
         renderItem={({ item }) => (
           <MemberItem
             member={item}
-            attendanceStatus={attendanceRecord.get(item)!!}
+            attendanceStatus={attendancesRecord[item.id].status}
             onLongPress={() => {
               console.log(`long press: ${item.name}`);
               router.push(`/member-detail/${item.id}`);
@@ -162,7 +181,7 @@ export default function HomeScreen() {
               fontWeight: "300",
             }}
           >
-            {attendanceRecord.size == 0
+            {Object.keys(attendancesRecord).length == 0
               ? `출석을 시작하세요!`
               : `${statuses[attendaceFilter - 1]} 없음`}
           </Text>
@@ -185,7 +204,7 @@ export default function HomeScreen() {
       {selectedMember && (
         <AttendanceBottomSheet
           member={selectedMember!!}
-          status={attendanceRecord.get(selectedMember!!)!!}
+          status={attendancesRecord[selectedMember!.id].status}
           ref={bottomRef}
           onItemPressed={(status) => {
             handleSheetChanges(status);

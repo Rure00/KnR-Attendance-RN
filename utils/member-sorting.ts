@@ -1,5 +1,6 @@
 // https://velog.io/@exafe1009/jsts-%EC%A0%95%EB%A0%AC-%ED%95%9C%EA%B8%80-%EC%98%81%EB%AC%B8-%EC%88%AB%EC%9E%90-%EC%88%9C
 
+import { AttendanceEntry } from "@/models/activity";
 import { AttendanceStatus } from "@/models/attendace-status";
 import { Member } from "@/models/member";
 
@@ -32,13 +33,16 @@ export const memberNameSorting = (members: Member[]) => {
 };
 
 export const memberAttendanceStatusSorting = (
-  record: Map<Member, AttendanceStatus>
+  memberRecord: Record<string, Member>,
+  attendanceRecord: Record<string, AttendanceEntry>
 ) => {
   const priority: AttendanceStatus[] = ["참석", "불참", "지각", "무단"];
 
   return priority.flatMap((status) =>
-    Array.from(record.entries())
-      .filter(([_, value]) => value === status)
-      .map(([key, _]) => key)
+    Object.entries(attendanceRecord)
+      .filter(([_, value]) => value.status === status)
+      .map(([key, _]) => {
+        return memberRecord[key]!;
+      })
   );
 };

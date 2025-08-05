@@ -1,7 +1,7 @@
 import { Activity } from "@/models/activity";
 import { dateToDotSeparated } from "@/utils/dateToDotSeparated";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { fetchGetActivityWhen } from "./activity-thunk";
+import { changeAttendance, fetchGetActivityWhen } from "./activity-thunk";
 
 interface ActivityState {
   // Date to AttendanceHistory
@@ -33,6 +33,20 @@ const activitesReducer = createSlice({
       const activity = payload.data!;
       state.activites[dateToDotSeparated(activity.date)] = activity;
     });
+    builder
+      .addCase(changeAttendance.pending, (state, thing) => {
+        const { activityId, userId, attendanceEntry } = thing.meta.arg;
+        const activityEntry = Object.entries(state.activites).find(
+          ([_, activity]) => activity.id === activityId
+        );
+        if (!activityEntry) return;
+
+        const [dateKey, activity] = activityEntry;
+        activity.attendance[userId] = attendanceEntry;
+      })
+      .addCase(changeAttendance.rejected, (state, action) => {
+        // Retry or Undo state.
+      });
   },
 });
 
