@@ -1,5 +1,6 @@
 import MemberListItem from "@/components/member-list-item";
 import { globalStyles } from "@/constants/styles";
+import { useMemberList } from "@/hooks/use-member-state";
 import { Member, testMembers } from "@/models/member";
 import { useRouter } from "expo-router";
 import { useState } from "react";
@@ -7,7 +8,7 @@ import { FlatList, StyleSheet, Text, View } from "react-native";
 
 export default function MemberListScreen() {
   const router = useRouter();
-  const [memberList, setMemberList] = useState<Member[]>(testMembers);
+  const memberList = useMemberList()
 
   return (
     <View style={[styles.background]}>

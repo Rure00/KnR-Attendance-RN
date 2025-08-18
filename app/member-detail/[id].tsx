@@ -217,7 +217,7 @@ export default function MemberDetailScreen() {
                   <Text
                     style={[styles.headerAttendanceRateText, { fontSize: 20 }]}
                   >
-                    {`${attendanceHistory.attendanceRate}%`}
+                    {`${attendanceHistory?.attendanceRate}%`}
                   </Text>
                 </View>
               </View>

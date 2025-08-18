@@ -3,12 +3,16 @@ import CustomTextInput from "@/components/input-text";
 import { useKeyboardHeight } from "@/components/keyboard-state";
 import CustomRadioButton from "@/components/radio-button";
 import { colors } from "@/constants/colors";
+import { createNewMember } from "@/firebase/firestore/members";
 import { Member, Position, positions } from "@/models/member";
 import { dateToDotSeparated } from "@/utils/dateToDotSeparated";
-import { useEffect, useRef, useState } from "react";
+import { useRouter } from "expo-router";
+import { useEffect, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 export default function AddMemberScreen() {
+  const router = useRouter();
+
   const keyboardHeight = useKeyboardHeight();
 
   const [currentStep, setCurrentStep] = useState(0);
@@ -47,7 +51,17 @@ export default function AddMemberScreen() {
           position: selectedPosition,
         };
 
-        console.log(`New Member Craeted!) ${newMemberCreated.name}`);
+        (async () => {
+          try {
+            await createNewMember(newMemberCreated);
+            console.log(`New Member Craeted!) ${newMemberCreated.name}`);
+
+            router.back();
+          } catch (e) {
+            console.error(e);
+          }
+        })();
+
         break;
       }
       case 2: {
