@@ -1,11 +1,10 @@
 import GridView from "@/components/grid-view";
 import { colors } from "@/constants/colors";
 import { globalStyles } from "@/constants/styles";
-import {
-  AttendanceHistory,
-  dummyAttendanceHistory,
-} from "@/models/attedance-history";
-import { Member, testMembers } from "@/models/member";
+import { getAllHistoryOfMember } from "@/firebase/firestore/attendance";
+import { useMemberRecord } from "@/hooks/use-member-record";
+import { AttendanceHistory } from "@/models/attedance-history";
+import { Member } from "@/models/member";
 import { dateToDotSeparated } from "@/utils/dateToDotSeparated";
 import { phoneNumberToDashSeperated } from "@/utils/phoneNumberToDashSeperated";
 import { Image } from "expo-image";
@@ -22,24 +21,29 @@ import {
 export default function MemberDetailScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
+  const memberRecords = useMemberRecord();
 
   const [member, setMember] = useState<Member>();
-  const [attendanceHistory, setAttendanceHistory] = useState<AttendanceHistory>(
-    dummyAttendanceHistory
-  );
+  const [attendanceHistory, setAttendanceHistory] =
+    useState<AttendanceHistory>();
 
   const [monthContainerWidth, setMonthContainerWidth] = useState(0);
   const monthItemDst = 8;
   const monthItemSize = (monthContainerWidth - monthItemDst * (6 + 1)) / 6;
 
   useEffect(() => {
-    // getMemberData
-    const member = testMembers.find((value) => {
-      return value.id == id;
-    });
+    if (memberRecords[id] != null) setMember(memberRecords[id]);
 
-    member && setMember(member);
-  }, []);
+    (async () => {
+      try {
+        const history = await getAllHistoryOfMember(id);
+
+        if (history.data != undefined) setAttendanceHistory(history.data);
+      } catch (e) {
+        console.error(e);
+      }
+    })();
+  }, [id]);
 
   useEffect(() => {
     if (member == undefined) return;
