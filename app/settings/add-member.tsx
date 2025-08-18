@@ -3,8 +3,9 @@ import CustomTextInput from "@/components/input-text";
 import { useKeyboardHeight } from "@/components/keyboard-state";
 import CustomRadioButton from "@/components/radio-button";
 import { colors } from "@/constants/colors";
-import { createNewMember } from "@/firebase/firestore/members";
 import { Member, Position, positions } from "@/models/member";
+import { fetchNewMember } from "@/redux/reducers/member-thunk";
+import { useAppDispatch } from "@/redux/store";
 import { dateToDotSeparated } from "@/utils/dateToDotSeparated";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
@@ -12,6 +13,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 export default function AddMemberScreen() {
   const router = useRouter();
+  const dispatcher = useAppDispatch();
 
   const keyboardHeight = useKeyboardHeight();
 
@@ -53,7 +55,9 @@ export default function AddMemberScreen() {
 
         (async () => {
           try {
-            await createNewMember(newMemberCreated);
+            //await createNewMember(newMemberCreated);
+            dispatcher(fetchNewMember(newMemberCreated));
+
             console.log(`New Member Craeted!) ${newMemberCreated.name}`);
 
             router.back();
