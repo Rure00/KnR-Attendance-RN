@@ -9,7 +9,10 @@ import { useAttendance } from "@/hooks/use-attendance";
 import { useMemberRecord } from "@/hooks/use-member-record";
 import { AttendanceStatus, statuses } from "@/models/attendace-status";
 import { Member } from "@/models/member";
-import { changeAttendance } from "@/redux/reducers/activity-thunk";
+import {
+  changeAttendance,
+  fetchCreateActivity,
+} from "@/redux/reducers/activity-thunk";
 import { useAppDispatch } from "@/redux/store";
 import { dateToDotSeparated } from "@/utils/dateToDotSeparated";
 import {
@@ -19,7 +22,7 @@ import {
 import BottomSheet from "@gorhom/bottom-sheet";
 import { useRouter } from "expo-router";
 import { useMemo, useRef, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { FlatList } from "react-native-gesture-handler";
 
 export default function HomeScreen() {
@@ -173,18 +176,24 @@ export default function HomeScreen() {
           </View>
         }
         ListEmptyComponent={
-          <Text
-            style={{
-              color: colors.blue100,
-              alignSelf: "center",
-              fontSize: 16,
-              fontWeight: "300",
+          <TouchableOpacity
+            onPress={() => {
+              dispatch(fetchCreateActivity(selectedDate));
             }}
           >
-            {Object.keys(attendancesRecord).length == 0
-              ? `출석을 시작하세요!`
-              : `${statuses[attendaceFilter - 1]} 없음`}
-          </Text>
+            <Text
+              style={{
+                color: colors.blue100,
+                alignSelf: "center",
+                fontSize: 16,
+                fontWeight: "300",
+              }}
+            >
+              {Object.keys(attendancesRecord).length == 0
+                ? `출석을 시작하세요!`
+                : `${statuses[attendaceFilter - 1]} 없음`}
+            </Text>
+          </TouchableOpacity>
         }
       />
 
