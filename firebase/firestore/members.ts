@@ -1,4 +1,6 @@
 import { Member } from "@/models/member";
+import { Logger } from "@/utils/Logger";
+import { stringify } from "@/utils/stringify";
 import firestore from "@react-native-firebase/firestore";
 import { Result } from "../result";
 
@@ -23,7 +25,7 @@ export async function getAllMembers(): Promise<Result<Member[]>> {
       data: memebers,
     };
   } catch (e) {
-    console.log(e);
+    Logger.error(`getAllMembers: ${stringify(e)}`);
     return {
       message: "",
       isSuccess: false,
@@ -58,7 +60,7 @@ export async function getMemberById(id: string): Promise<Result<Member>> {
       };
     }
   } catch (e) {
-    console.log(e);
+    Logger.error(`getMemberById: ${stringify(e)}`);
     return {
       message: "",
       isSuccess: false,
@@ -80,7 +82,7 @@ export async function createNewMember(
       data: getMemberResult!.data,
     };
   } catch (e) {
-    console.error(e);
+    Logger.error(`createNewMember: ${stringify(e)}`);
     return {
       message: "",
       isSuccess: false,
@@ -102,7 +104,7 @@ export async function updateMember(member: Member): Promise<Result<Member>> {
       data: getMemberResult!.data,
     };
   } catch (e) {
-    console.log(e);
+    Logger.error(`updateMember: ${stringify(e)}`);
     return {
       message: "",
       isSuccess: false,
@@ -120,7 +122,7 @@ export async function deleteMember(member: Member): Promise<Result<boolean>> {
       data: true,
     };
   } catch (e) {
-    console.log(e);
+    Logger.error(`deleteMember: ${stringify(e)}`);
     return {
       message: "",
       isSuccess: false,

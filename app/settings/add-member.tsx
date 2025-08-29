@@ -7,6 +7,8 @@ import { Member, Position, positions } from "@/models/member";
 import { fetchNewMember } from "@/redux/reducers/member-thunk";
 import { useAppDispatch } from "@/redux/store";
 import { dateToDotSeparated } from "@/utils/dateToDotSeparated";
+import { Logger } from "@/utils/Logger";
+import { stringify } from "@/utils/stringify";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
@@ -57,12 +59,9 @@ export default function AddMemberScreen() {
           try {
             //await createNewMember(newMemberCreated);
             dispatcher(fetchNewMember(newMemberCreated));
-
-            console.log(`New Member Craeted!) ${newMemberCreated.name}`);
-
             router.back();
           } catch (e) {
-            console.error(e);
+            Logger.error(stringify(e));
           }
         })();
 

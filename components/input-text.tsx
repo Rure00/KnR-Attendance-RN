@@ -29,7 +29,6 @@ export default function CustomTextInput({
   const inputRef = useRef<TextInput>(null);
 
   useEffect(() => {
-    console.log(`isFocues: ${isFocused}`);
     if (isFocused) {
       inputRef.current!!.focus();
     } else {

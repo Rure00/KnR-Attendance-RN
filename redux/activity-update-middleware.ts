@@ -1,3 +1,5 @@
+import { Logger } from "@/utils/Logger";
+import { stringify } from "@/utils/stringify";
 import { createListenerMiddleware, isAsyncThunkAction } from "@reduxjs/toolkit";
 import {
   removeCachedActivity,
@@ -19,19 +21,30 @@ memberUpdateMiddleware.startListening({
       fetchDeleteActivity
     )(action),
   effect: async (action, listenerApi) => {
-    if (
-      fetchCreateActivity.fulfilled.match(action) ||
-      fetchUpdateActivity.fulfilled.match(action)
-    ) {
+    if (fetchCreateActivity.fulfilled.match(action)) {
       const activityResult = action.payload;
       if (activityResult.isSuccess) {
         listenerApi.dispatch(updateCachedActivity(activityResult.data!));
+        Logger.debug(`fetchCreateActivity: ${stringify(activityResult.data)}`);
+      } else {
+        Logger.info(`fetchCreateActivity fail`);
+      }
+    } else if (fetchUpdateActivity.fulfilled.match(action)) {
+      const activityResult = action.payload;
+      if (activityResult.isSuccess) {
+        listenerApi.dispatch(updateCachedActivity(activityResult.data!));
+        Logger.debug(`fetchUpdateActivity: ${stringify(activityResult.data)}`);
+      } else {
+        Logger.info(`fetchUpdateActivity fail`);
       }
     } else if (fetchDeleteActivity.fulfilled.match(action)) {
       const deleteResult = action.payload;
       if (deleteResult.isSuccess) {
         const deletedDate = action.meta.arg.date;
         listenerApi.dispatch(removeCachedActivity(deletedDate));
+        Logger.debug(`removeCachedActivity: ${stringify(deletedDate)}`);
+      } else {
+        Logger.info(`removeCachedActivity fail`);
       }
     }
   },

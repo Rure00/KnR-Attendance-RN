@@ -1,14 +1,13 @@
 import MemberListItem from "@/components/member-list-item";
 import { globalStyles } from "@/constants/styles";
 import { useMemberList } from "@/hooks/use-member-state";
-import { Member, testMembers } from "@/models/member";
+import { Logger } from "@/utils/Logger";
 import { useRouter } from "expo-router";
-import { useState } from "react";
 import { FlatList, StyleSheet, Text, View } from "react-native";
 
 export default function MemberListScreen() {
   const router = useRouter();
-  const memberList = useMemberList()
+  const memberList = useMemberList();
 
   return (
     <View style={[styles.background]}>
@@ -25,7 +24,7 @@ export default function MemberListScreen() {
               router.push(`/member-detail/${item.id}`);
             }}
             doDelete={() => {
-              console.log(`MemberListScreen: Member Do Delete!`);
+              Logger.debug(`MemberListScreen: Member Do Delete!`);
             }}
           />
         )}

@@ -1,6 +1,8 @@
 import { colors } from "@/constants/colors";
 import { AttendanceStatus } from "@/models/attendace-status";
 import { Member } from "@/models/member";
+import { Logger } from "@/utils/Logger";
+import { stringify } from "@/utils/stringify";
 import { Image, ImageSource } from "expo-image";
 import * as Linking from "expo-linking";
 import { useEffect, useMemo, useState } from "react";
@@ -98,12 +100,12 @@ export default function MemberItem({
           if (await Linking.canOpenURL(url)) {
             Linking.openURL(url);
           } else {
-            console.log("Cannot Open CallScreen.");
+            Logger.debug("Cannot Open CallScreen.");
           }
 
           setCall(false);
         } catch (e) {
-          console.error(e);
+          Logger.debug(stringify(e));
         }
       })();
     }

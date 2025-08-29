@@ -6,7 +6,9 @@ import { useMemberRecord } from "@/hooks/use-member-record";
 import { AttendanceHistory } from "@/models/attedance-history";
 import { Member } from "@/models/member";
 import { dateToDotSeparated } from "@/utils/dateToDotSeparated";
+import { Logger } from "@/utils/Logger";
 import { phoneNumberToDashSeperated } from "@/utils/phoneNumberToDashSeperated";
+import { stringify } from "@/utils/stringify";
 import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
@@ -40,7 +42,7 @@ export default function MemberDetailScreen() {
 
         if (history.data != undefined) setAttendanceHistory(history.data);
       } catch (e) {
-        console.error(e);
+        Logger.error(stringify(e));
       }
     })();
   }, [id]);

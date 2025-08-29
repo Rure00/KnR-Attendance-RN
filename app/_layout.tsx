@@ -57,7 +57,6 @@ export default function RootLayout() {
                     <TouchableOpacity
                       style={{ paddingHorizontal: 10 }}
                       onPress={() => {
-                        console.log("Click: Settings");
                         router.push("/settings");
                       }}
                     >

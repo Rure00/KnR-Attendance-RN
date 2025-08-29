@@ -1,5 +1,7 @@
 import { colors } from "@/constants/colors";
 import { Member } from "@/models/member";
+import { Logger } from "@/utils/Logger";
+import { stringify } from "@/utils/stringify";
 import { Image } from "expo-image";
 import * as Linking from "expo-linking";
 import { useEffect, useState } from "react";
@@ -39,7 +41,7 @@ export default function MemberListItem({
   }));
 
   const log = (n: number) => {
-    console.log(`drag: ${n}`);
+    Logger.debug(`drag: ${n}`);
   };
 
   const drag = Gesture.Pan()
@@ -80,12 +82,12 @@ export default function MemberListItem({
           if (await Linking.canOpenURL(url)) {
             Linking.openURL(url);
           } else {
-            console.log("Cannot Open CallScreen.");
+            Logger.debug("Cannot Open CallScreen.");
           }
 
           setCall(false);
         } catch (e) {
-          console.error(e);
+          Logger.error(stringify(e));
         }
       })();
     }

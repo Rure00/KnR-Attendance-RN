@@ -3,6 +3,8 @@ import {
   AttendanceHistory,
   YearlyAttendance,
 } from "@/models/attedance-history";
+import { Logger } from "@/utils/Logger";
+import { stringify } from "@/utils/stringify";
 import firestore from "@react-native-firebase/firestore";
 import { Result } from "../result";
 import { getActivityById, getAllActivities } from "./activities";
@@ -29,7 +31,7 @@ export async function getAttendanceByActivityId(
       };
     }
   } catch (e) {
-    console.log(`getAttendanceByActivityId error: ${e}`);
+    Logger.error(`getAttendanceByActivityId error: ${stringify(e)}`);
     return {
       message: "",
       isSuccess: false,
@@ -58,7 +60,7 @@ export async function getAttendanceOfMember(
       };
     }
   } catch (e) {
-    console.log(`getAttendanceOfMember error: ${e}`);
+    Logger.error(`getAttendanceOfMember error: ${stringify(e)}`);
     return {
       message: "",
       isSuccess: false,
@@ -85,7 +87,7 @@ export async function setAttendanceForMember(
       data: true,
     };
   } catch (e) {
-    console.log(`setAttendanceForMember error: ${e}`);
+    Logger.error(`setAttendanceForMember error: ${stringify(e)}`);
     return {
       message: "",
       isSuccess: false,
@@ -168,7 +170,7 @@ export async function getAllHistoryOfMember(
       data: result,
     };
   } catch (e) {
-    console.log(`setAttendanceForMember error: ${e}`);
+    Logger.error(`setAttendanceForMember error: ${stringify(e)}`);
     return {
       message: "",
       isSuccess: false,

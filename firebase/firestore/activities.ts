@@ -1,5 +1,7 @@
-import { Activity } from "@/models/activity";
+import { Activity, AttendanceEntry } from "@/models/activity";
 import { AttendanceStatus } from "@/models/attendace-status";
+import { Logger } from "@/utils/Logger";
+import { stringify } from "@/utils/stringify";
 import firestore, { Timestamp } from "@react-native-firebase/firestore";
 import { Result } from "../result";
 import { getAttendanceByActivityId } from "./attendance";
@@ -27,7 +29,7 @@ export async function getAllActivities(): Promise<Result<Activity[]>> {
       data: activities,
     };
   } catch (e) {
-    console.log(`getAllActivities error: ${e}`);
+    Logger.error(`getAllActivities error: ${stringify(e)}`);
     return {
       message: "",
       isSuccess: false,
@@ -59,7 +61,7 @@ export async function getActivityById(id: string): Promise<Result<Activity>> {
       };
     }
   } catch (e) {
-    console.log(`getActivityById error: ${e}`);
+    Logger.error(`getActivityById error: ${stringify(e)}`);
     return {
       message: "",
       isSuccess: false,
@@ -96,7 +98,7 @@ export async function getActivityByDate(date: Date): Promise<Result<Activity>> {
       };
     }
   } catch (e) {
-    console.log(`getActivityByDate error: ${e}`);
+    Logger.error(`getActivityByDate error: ${stringify(e)}`);
     return {
       message: "",
       isSuccess: false,
@@ -113,7 +115,7 @@ export async function createNewActivity(date: Date): Promise<Result<Activity>> {
       .collection(ACTIVITY_COLLECTION)
       .add(entity);
 
-    setAttendanceDefault(activityDocs.id);
+    await setAttendanceDefault(activityDocs.id);
 
     // fetch
     const activity = await fetchActivityEntity(activityDocs.id, date);
@@ -123,7 +125,7 @@ export async function createNewActivity(date: Date): Promise<Result<Activity>> {
       data: activity,
     };
   } catch (e) {
-    console.log(`createNewActivity error: ${e}`);
+    Logger.error(`createNewActivity error: ${stringify(e)}`);
     return {
       message: "",
       isSuccess: false,
@@ -143,7 +145,7 @@ export async function deleteActivity(
       data: true,
     };
   } catch (e) {
-    console.log(`deleteActivity error: ${e}`);
+    Logger.error(`deleteActivity error: ${stringify(e)}`);
     return {
       message: "",
       isSuccess: false,
@@ -173,7 +175,7 @@ export async function updateActivity(
       data: updated,
     };
   } catch (e) {
-    console.log(`updateActivity error: ${e}`);
+    Logger.error(`updateActivity error: ${stringify(e)}`);
     return {
       message: "",
       isSuccess: false,
@@ -224,29 +226,34 @@ async function fetchActivityEntity(id: string, date: Date): Promise<Activity> {
 
 async function setAttendanceDefault(activityId: string): Promise<boolean> {
   try {
-    const members = await getAllMembers();
+    const attendanceEntries: Record<string, AttendanceEntry> = {};
 
-    const attendanceEntries = members.map((member) => [
-      member.id,
-      {
+    (await getAllMembers()).data?.forEach((member) => {
+      attendanceEntries[member.id] = {
         createdAt: new Date(),
         status: "불참" as AttendanceStatus,
-      },
-    ]);
+      };
+    });
 
     const collections = await firestore()
       .collection(ACTIVITY_COLLECTION)
       .doc(activityId)
       .collection(ATTENDANCE_COLLECTION);
 
-    const batchWrites = Object.entries(attendanceEntries).map(([id, entry]) => {
-      return collections.doc(id).set(entry);
-    });
-    await Promise.all(batchWrites);
+    if (attendanceEntries != undefined) {
+      const batchWrites = Object.entries(attendanceEntries).map(
+        ([id, entry]) => {
+          return collections.doc(id).set(entry);
+        }
+      );
 
-    return true;
+      await Promise.all(batchWrites);
+      return true;
+    }
+
+    return false;
   } catch (e) {
-    console.log(`setAttendanceForMember error: ${e}`);
+    Logger.error(`setAttendanceForMember error: ${stringify(e)}`);
     return false;
   }
 }

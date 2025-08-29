@@ -15,10 +15,12 @@ import {
 } from "@/redux/reducers/activity-thunk";
 import { useAppDispatch } from "@/redux/store";
 import { dateToDotSeparated } from "@/utils/dateToDotSeparated";
+import { Logger } from "@/utils/Logger";
 import {
   memberAttendanceStatusSorting,
   memberNameSorting,
 } from "@/utils/member-sorting";
+import { stringify } from "@/utils/stringify";
 import BottomSheet from "@gorhom/bottom-sheet";
 import { useRouter } from "expo-router";
 import { useMemo, useRef, useState } from "react";
@@ -26,7 +28,7 @@ import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { FlatList } from "react-native-gesture-handler";
 
 export default function HomeScreen() {
-  console.log("HomeScreen--------------------------------------------------");
+  Logger.debug("HomeScreen--------------------------------------------------");
   const router = useRouter();
   const dispatch = useAppDispatch();
 
@@ -43,6 +45,8 @@ export default function HomeScreen() {
   const [selectedMember, setMember] = useState<Member | null>();
 
   const memberArray = useMemo(() => {
+    if (!activity || !attendancesRecord) return [];
+
     const filterArray = ["전체", "참석", "불참", "지각", "무단"];
 
     const array = Object.entries(memberRecord)
@@ -61,36 +65,40 @@ export default function HomeScreen() {
     }
   }, [selectedDate, activity, sorting, attendaceFilter]);
 
-  const attendanceNumber = useMemo(() => {
-    const values = Object.entries(attendancesRecord).map(
-      ([id, attendanceEntry]) => attendanceEntry
-    );
+  const attendanceNumber: [number, number, number, number, number] =
+    useMemo(() => {
+      if (!activity || !attendancesRecord) return [0, 0, 0, 0, 0];
 
-    const result: [number, number, number, number, number] = [0, 0, 0, 0, 0];
-    result[0] = values.length;
+      const values = Object.entries(attendancesRecord).map(
+        ([id, attendanceEntry]) => attendanceEntry
+      );
 
-    values.forEach((it) => {
-      switch (it.status) {
-        case "참석":
-          result[1]++;
-          break;
-        case "불참":
-          result[2]++;
-          break;
-        case "지각":
-          result[3]++;
-          break;
-        case "무단":
-          result[4]++;
-          break;
-      }
-    });
-    return result;
-  }, [attendancesRecord]);
+      const result: [number, number, number, number, number] = [0, 0, 0, 0, 0];
+      result[0] = values.length;
+
+      values.forEach((it) => {
+        switch (it.status) {
+          case "참석":
+            result[1]++;
+            break;
+          case "불참":
+            result[2]++;
+            break;
+          case "지각":
+            result[3]++;
+            break;
+          case "무단":
+            result[4]++;
+            break;
+        }
+      });
+      return result;
+    }, [attendancesRecord]);
 
   const bottomRef = useRef<BottomSheet>(null);
   const handleSheetChanges = (status: AttendanceStatus) => {
-    console.log(`SetStatus: ${selectedMember?.name} to ${status}`);
+    Logger.debug(`SetStatus: ${selectedMember?.name} to ${status}`);
+    if (!activity || !attendancesRecord) return;
 
     const before = attendancesRecord[selectedMember!.id];
 
@@ -115,28 +123,30 @@ export default function HomeScreen() {
         }}
         data={memberArray}
         keyExtractor={(member) => member.id}
-        renderItem={({ item }) => (
-          <MemberItem
-            member={item}
-            attendanceStatus={attendancesRecord[item.id].status}
-            onLongPress={() => {
-              console.log(`long press: ${item.name}`);
-              router.push(`/member-detail/${item.id}`);
-            }}
-            onPressed={(member) => {
-              try {
-                setMember(member);
-                bottomRef.current?.expand();
-              } catch (e) {
-                if (e instanceof Error) {
-                  console.log(`Stack: ${e.stack}`);
-                } else {
-                  console.log("Unknown error", e);
+        renderItem={({ item }) =>
+          attendancesRecord?.[item.id] ? (
+            <MemberItem
+              member={item}
+              attendanceStatus={attendancesRecord[item.id].status}
+              onLongPress={() => {
+                Logger.debug(`long press: ${item.name}`);
+                router.push(`/member-detail/${item.id}`);
+              }}
+              onPressed={(member) => {
+                try {
+                  setMember(member);
+                  bottomRef.current?.expand();
+                } catch (e) {
+                  if (e instanceof Error) {
+                    Logger.debug(`Stack: ${e.stack}`);
+                  } else {
+                    Logger.error(stringify(e));
+                  }
                 }
-              }
-            }}
-          />
-        )}
+              }}
+            />
+          ) : null
+        }
         ListHeaderComponent={
           <View>
             <View style={styles.headerContainer}>
@@ -189,9 +199,9 @@ export default function HomeScreen() {
                 fontWeight: "300",
               }}
             >
-              {Object.keys(attendancesRecord).length == 0
-                ? `출석을 시작하세요!`
-                : `${statuses[attendaceFilter - 1]} 없음`}
+              {attendancesRecord
+                ? `${statuses[attendaceFilter - 1]} 없음`
+                : `출석을 시작하세요!`}
             </Text>
           </TouchableOpacity>
         }
@@ -213,7 +223,7 @@ export default function HomeScreen() {
       {selectedMember && (
         <AttendanceBottomSheet
           member={selectedMember!!}
-          status={attendancesRecord[selectedMember!.id].status}
+          status={attendancesRecord?.[selectedMember!.id].status ?? "불참"}
           ref={bottomRef}
           onItemPressed={(status) => {
             handleSheetChanges(status);

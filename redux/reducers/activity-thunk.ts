@@ -1,5 +1,4 @@
 import {
-  ActivityEntity,
   createNewActivity,
   deleteActivity,
   getActivityByDate,
@@ -26,8 +25,8 @@ export const fetchGetActivityWhen = createAsyncThunk(
 
 export const fetchCreateActivity = createAsyncThunk(
   CREAT_ACTIVITY,
-  async (act: ActivityEntity, thunkAPI) => {
-    const result = await createNewActivity(act);
+  async (date: Date, thunkAPI) => {
+    const result = await createNewActivity(date);
     return result;
   }
 );
