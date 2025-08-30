@@ -5,7 +5,8 @@ import {
 } from "@/models/attedance-history";
 import { Logger } from "@/utils/Logger";
 import { stringify } from "@/utils/stringify";
-import firestore from "@react-native-firebase/firestore";
+import { collection, doc, setDoc } from "firebase/firestore";
+import { db } from "../config";
 import { Result } from "../result";
 import { getActivityById, getAllActivities } from "./activities";
 
@@ -75,13 +76,11 @@ export async function setAttendanceForMember(
   entry: AttendanceEntry
 ): Promise<Result<boolean>> {
   try {
-    const attendanceSnapShot = await firestore()
-      .collection(ACTIVITY_COLLECTION)
-      .doc(activityId)
-      .collection(ATTENDANCE_COLLECTION)
-      .doc(memberId)
-      .set(entry);
-      
+    const activityDocRef = doc(db, ACTIVITY_COLLECTION, activityId);
+    const attendanceColRef = collection(activityDocRef, ATTENDANCE_COLLECTION);
+
+    await setDoc(doc(attendanceColRef, memberId), entry);
+
     return {
       message: "",
       isSuccess: true,

@@ -2,7 +2,20 @@ import { Activity, AttendanceEntry } from "@/models/activity";
 import { AttendanceStatus } from "@/models/attendace-status";
 import { Logger } from "@/utils/Logger";
 import { stringify } from "@/utils/stringify";
-import firestore, { Timestamp } from "@react-native-firebase/firestore";
+import {
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  Timestamp,
+  updateDoc,
+  where,
+  writeBatch,
+} from "firebase/firestore";
+import { db } from "../config";
 import { Result } from "../result";
 import { getAttendanceByActivityId } from "./attendance";
 import { getAllMembers } from "./members";
@@ -13,13 +26,14 @@ const DATE_FIELD = `date`;
 
 export async function getAllActivities(): Promise<Result<Activity[]>> {
   try {
-    const activityDocs = await firestore()
-      .collection(ACTIVITY_COLLECTION)
-      .get();
+    const activityColRef = collection(db, ACTIVITY_COLLECTION);
+
+    const activitySnapshot = await getDocs(activityColRef);
 
     const activities: Activity[] = await Promise.all(
-      activityDocs.docs.map(async (doc) => {
-        const ts = doc.data().date as Timestamp;
+      activitySnapshot.docs.map(async (doc) => {
+        const data = doc.data();
+        const ts = data.date as Timestamp;
         return fetchActivityEntity(doc.id, ts.toDate());
       })
     );
@@ -40,20 +54,19 @@ export async function getAllActivities(): Promise<Result<Activity[]>> {
 
 export async function getActivityById(id: string): Promise<Result<Activity>> {
   try {
-    const snapshot = await firestore()
-      .collection(ACTIVITY_COLLECTION)
-      .doc(id)
-      .get();
+    const activityDoc = await getDoc(doc(db, ACTIVITY_COLLECTION, id));
 
-    if (!snapshot.exists()) {
+    if (!activityDoc.exists()) {
+      Logger.info(`getActivityById: activityDoc not exists.`);
       return {
         message: "",
         isSuccess: false,
         data: undefined,
       };
     } else {
-      const ts = snapshot.data()!.date as Timestamp;
+      const ts = activityDoc.data()!.date as Timestamp;
       const activity = await fetchActivityEntity(id, ts.toDate());
+
       return {
         message: "",
         isSuccess: true,
@@ -78,13 +91,17 @@ export async function getActivityByDate(date: Date): Promise<Result<Activity>> {
     const endOfDay = new Date(date);
     endOfDay.setHours(23, 59, 59, 999);
 
-    const snapshot = await firestore()
-      .collection(ACTIVITY_COLLECTION)
-      .where(DATE_FIELD, ">=", startOfDay)
-      .where(DATE_FIELD, "<=", endOfDay)
-      .get();
+    const q = query(
+      collection(db, ACTIVITY_COLLECTION),
+      where(DATE_FIELD, `>=`, startOfDay),
+      where(DATE_FIELD, `<=`, endOfDay)
+    );
 
-    if (snapshot.empty) {
+    const querySnapshot = await getDocs(q);
+
+    if (querySnapshot.empty) {
+      Logger.info(`getActivityByDate: querySnapshot is empty.`);
+
       return {
         message: "",
         isSuccess: false,
@@ -92,7 +109,7 @@ export async function getActivityByDate(date: Date): Promise<Result<Activity>> {
       };
     } else {
       const activity = await Promise.all(
-        snapshot.docs.map(async (doc) => {
+        querySnapshot.docs.map(async (doc) => {
           const ts = doc.data().date as Timestamp;
           return fetchActivityEntity(doc.id, ts.toDate());
         })
@@ -118,10 +135,10 @@ export async function createNewActivity(date: Date): Promise<Result<Activity>> {
   try {
     const entity = { date: date };
 
-    const activityDocs = await firestore()
-      .collection(ACTIVITY_COLLECTION)
-      .add(entity);
-
+    const activityDocs = await addDoc(
+      collection(db, ACTIVITY_COLLECTION),
+      entity
+    );
     await setAttendanceDefault(activityDocs.id);
 
     // fetch
@@ -145,7 +162,7 @@ export async function deleteActivity(
   activity: Activity
 ): Promise<Result<boolean>> {
   try {
-    await firestore().collection(ACTIVITY_COLLECTION).doc(activity.id).delete();
+    await deleteDoc(doc(db, ACTIVITY_COLLECTION, activity.id));
     return {
       message: "",
       isSuccess: true,
@@ -168,11 +185,7 @@ export async function updateActivity(
     // Change to ActivityEntity.
     const entity = { date: activity.date };
 
-    await firestore()
-      .collection(ACTIVITY_COLLECTION)
-      .doc(activity.id)
-      .set(entity);
-
+    await updateDoc(doc(db, ACTIVITY_COLLECTION, activity.id), entity);
     const updated = await fetchActivityEntity(activity.id, activity.date);
 
     return {
@@ -241,20 +254,20 @@ async function setAttendanceDefault(activityId: string): Promise<boolean> {
       };
     });
 
-    const collections = await firestore()
-      .collection(ACTIVITY_COLLECTION)
-      .doc(activityId)
-      .collection(ATTENDANCE_COLLECTION);
+    const activityDocRef = doc(db, ACTIVITY_COLLECTION, activityId);
 
     if (attendanceEntries !== undefined) {
-      const batchWrites = Object.entries(attendanceEntries).map(
-        ([id, entry]) => {
-          return collections.doc(id).set(entry);
-        }
-      );
+      const batch = writeBatch(db);
 
-      await Promise.all(batchWrites);
-      return true;
+      Object.entries(attendanceEntries).forEach(([id, entry]) => {
+        const entryDocRef = doc(
+          collection(activityDocRef, ATTENDANCE_COLLECTION),
+          id
+        );
+        batch.set(entryDocRef, entry);
+      });
+
+      await batch.commit();
     }
 
     return false;

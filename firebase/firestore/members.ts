@@ -1,14 +1,23 @@
 import { Member } from "@/models/member";
 import { Logger } from "@/utils/Logger";
 import { stringify } from "@/utils/stringify";
-import firestore from "@react-native-firebase/firestore";
+import {
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  getDoc,
+  getDocs,
+  updateDoc,
+} from "firebase/firestore";
+import { db } from "../config";
 import { Result } from "../result";
 
 const MEMBER_COLLECTION = "member";
 
 export async function getAllMembers(): Promise<Result<Member[]>> {
   try {
-    const memberDocs = await firestore().collection(MEMBER_COLLECTION).get();
+    const memberDocs = await getDocs(collection(db, MEMBER_COLLECTION));
 
     const memebers: Member[] = memberDocs.docs.map((doc) => {
       const data = doc.data();
@@ -36,10 +45,7 @@ export async function getAllMembers(): Promise<Result<Member[]>> {
 
 export async function getMemberById(id: string): Promise<Result<Member>> {
   try {
-    const memberDocs = await firestore()
-      .collection(MEMBER_COLLECTION)
-      .doc(id)
-      .get();
+    const memberDocs = await getDoc(doc(db, MEMBER_COLLECTION, id));
 
     if (memberDocs.exists()) {
       const member = {
@@ -73,7 +79,7 @@ export async function createNewMember(
   member: Omit<Member, "id">
 ): Promise<Result<Member>> {
   try {
-    const docRef = await firestore().collection(MEMBER_COLLECTION).add(member);
+    const docRef = await addDoc(collection(db, MEMBER_COLLECTION), member);
     const getMemberResult = await getMemberById(docRef.id);
 
     return {
@@ -94,7 +100,7 @@ export async function createNewMember(
 export async function updateMember(member: Member): Promise<Result<Member>> {
   try {
     const { id, ...updated } = { ...member };
-    await firestore().collection(MEMBER_COLLECTION).doc(member.id).set(updated);
+    await updateDoc(doc(db, MEMBER_COLLECTION), updated);
 
     const getMemberResult = await getMemberById(id);
 
@@ -115,7 +121,8 @@ export async function updateMember(member: Member): Promise<Result<Member>> {
 
 export async function deleteMember(member: Member): Promise<Result<boolean>> {
   try {
-    await firestore().collection(MEMBER_COLLECTION).doc(member.id).delete();
+    await deleteDoc(doc(db, MEMBER_COLLECTION, member.id));
+
     return {
       message: "",
       isSuccess: true,
