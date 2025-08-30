@@ -9,7 +9,7 @@ import { getAllMembers } from "./members";
 
 const ACTIVITY_COLLECTION = "activity";
 const ATTENDANCE_COLLECTION = "attendances";
-const DATE_FILED = `date`;
+const DATE_FIELD = `date`;
 
 export async function getAllActivities(): Promise<Result<Activity[]>> {
   try {
@@ -72,9 +72,16 @@ export async function getActivityById(id: string): Promise<Result<Activity>> {
 
 export async function getActivityByDate(date: Date): Promise<Result<Activity>> {
   try {
+    const startOfDay = new Date(date);
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const endOfDay = new Date(date);
+    endOfDay.setHours(23, 59, 59, 999);
+
     const snapshot = await firestore()
       .collection(ACTIVITY_COLLECTION)
-      .where(DATE_FILED, `==`, date)
+      .where(DATE_FIELD, ">=", startOfDay)
+      .where(DATE_FIELD, "<=", endOfDay)
       .get();
 
     if (snapshot.empty) {
@@ -160,7 +167,6 @@ export async function updateActivity(
   try {
     // Change to ActivityEntity.
     const entity = { date: activity.date };
-    const attendances = activity.attendance;
 
     await firestore()
       .collection(ACTIVITY_COLLECTION)
@@ -240,7 +246,7 @@ async function setAttendanceDefault(activityId: string): Promise<boolean> {
       .doc(activityId)
       .collection(ATTENDANCE_COLLECTION);
 
-    if (attendanceEntries != undefined) {
+    if (attendanceEntries !== undefined) {
       const batchWrites = Object.entries(attendanceEntries).map(
         ([id, entry]) => {
           return collections.doc(id).set(entry);

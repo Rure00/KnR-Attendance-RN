@@ -40,18 +40,18 @@ export default function MemberDetailScreen() {
       try {
         const history = await getAllHistoryOfMember(id);
 
-        if (history.data != undefined) setAttendanceHistory(history.data);
+        if (history.data !== undefined) setAttendanceHistory(history.data);
       } catch (e) {
         Logger.error(stringify(e));
       }
     })();
-  }, [id]);
+  }, [memberRecords, id]);
 
   useEffect(() => {
-    if (member == undefined) return;
+    if (member === undefined) return;
   }, [member]);
 
-  if (member == undefined) return null;
+  if (member === undefined) return null;
   return (
     <View style={styles.background}>
       <FlatList

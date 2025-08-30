@@ -58,7 +58,7 @@ export default function HomeScreen() {
       })
       .map(([_, member]) => member);
 
-    if (sorting == "이름") {
+    if (sorting === "이름") {
       return memberNameSorting(array);
     } else {
       return memberAttendanceStatusSorting(memberRecord, attendancesRecord);
@@ -93,7 +93,7 @@ export default function HomeScreen() {
         }
       });
       return result;
-    }, [attendancesRecord]);
+    }, [activity, attendancesRecord]);
 
   const bottomRef = useRef<BottomSheet>(null);
   const handleSheetChanges = (status: AttendanceStatus) => {
@@ -176,7 +176,7 @@ export default function HomeScreen() {
                 color: colors.gray200,
               }}
               onPress={() => {
-                setSorting(sorting == "이름" ? "출석" : "이름");
+                setSorting(sorting === "이름" ? "출석" : "이름");
               }}
             >
               정렬: {sorting}
@@ -222,7 +222,7 @@ export default function HomeScreen() {
 
       {selectedMember && (
         <AttendanceBottomSheet
-          member={selectedMember!!}
+          member={selectedMember}
           status={attendancesRecord?.[selectedMember!.id].status ?? "불참"}
           ref={bottomRef}
           onItemPressed={(status) => {

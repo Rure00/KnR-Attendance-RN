@@ -151,7 +151,7 @@ export default function AddMemberScreen() {
             labelStyle={styles.label}
             label={"휴대폰번호"}
             placeholder={"휴대폰번호"}
-            isFocused={currentStep == 1}
+            isFocused={currentStep === 1}
           />
         )}
 
@@ -165,7 +165,7 @@ export default function AddMemberScreen() {
             labelStyle={styles.label}
             label={"이름"}
             placeholder={"이름"}
-            isFocused={currentStep == 0}
+            isFocused={currentStep === 0}
           />
         )}
       </View>

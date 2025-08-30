@@ -81,6 +81,7 @@ export async function setAttendanceForMember(
       .collection(ATTENDANCE_COLLECTION)
       .doc(memberId)
       .set(entry);
+      
     return {
       message: "",
       isSuccess: true,

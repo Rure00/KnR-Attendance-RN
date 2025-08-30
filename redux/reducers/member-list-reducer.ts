@@ -30,7 +30,7 @@ const memberListReducer = createSlice({
         return;
       }
 
-      Logger.debug(`fetchMembers ${payload.data}`);
+      Logger.debug(`fetchMembers ${stringify(payload.data)}`);
 
       state.memberList = payload.data!;
       payload.data?.forEach((it) => {
