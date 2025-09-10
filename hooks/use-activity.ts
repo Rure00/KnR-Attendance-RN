@@ -11,16 +11,22 @@ export function useActivity(date: Date): Activity | undefined {
   const dispatch = useAppDispatch();
 
   const activity = useAppSelector(
-    (state) => state.activitiesReducer.activites[key]
+    (state) => state.activitiesReducer.activities[key]
   );
+
+  const activites = useAppSelector(
+    (state) => state.activitiesReducer.activities
+  )
+  Logger.debug(`useActivity: ${stringify(activites)}`)
 
   useEffect(() => {
     if (!activity) {
+      Logger.debug(`call fetchGetActivityWhen: ${date} (${key})`)
       dispatch(fetchGetActivityWhen(date));
     }
-  }, [activity, date, dispatch]);
+  }, [activity, date, key,dispatch]);
 
-  Logger.debug(`date: ${stringify(date)} -> ₩n ${stringify(activity)}`);
+  Logger.debug(`date: ${stringify(date)} -> ${stringify(activity)}`);
 
   return activity;
 }

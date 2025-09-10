@@ -93,11 +93,15 @@ export async function getActivityByDate(date: Date): Promise<Result<Activity>> {
 
     const q = query(
       collection(db, ACTIVITY_COLLECTION),
-      where(DATE_FIELD, `>=`, startOfDay),
-      where(DATE_FIELD, `<=`, endOfDay)
+      where(DATE_FIELD, `>=`, Timestamp.fromDate(startOfDay)),
+      where(DATE_FIELD, `<=`, Timestamp.fromDate(endOfDay))
     );
 
     const querySnapshot = await getDocs(q);
+
+    Logger.debug(
+      `getActivityByDate: ${stringify(startOfDay)}~${stringify(endOfDay)}`
+    );
 
     if (querySnapshot.empty) {
       Logger.info(`getActivityByDate: querySnapshot is empty.`);
@@ -110,10 +114,13 @@ export async function getActivityByDate(date: Date): Promise<Result<Activity>> {
     } else {
       const activity = await Promise.all(
         querySnapshot.docs.map(async (doc) => {
+          Logger.debug(`getActivityByDate: ${stringify(doc.data())}`);
           const ts = doc.data().date as Timestamp;
           return fetchActivityEntity(doc.id, ts.toDate());
         })
       );
+
+      Logger.debug(`getActivityByDate: ${activity}`);
 
       return {
         message: "",

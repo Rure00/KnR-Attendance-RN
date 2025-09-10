@@ -5,20 +5,25 @@ import { useEffect, useState } from "react";
 export function useAttendance(
   activity?: Activity
 ): Record<string, AttendanceEntry> | undefined {
-  if(!activity) return undefined;
-
-  const [record, setRecord] = useState<Record<string, AttendanceEntry>>({});
+  const [record, setRecord] = useState<
+    Record<string, AttendanceEntry> | undefined
+  >(undefined);
 
   useEffect(() => {
+    if (!activity) {
+      setRecord(undefined);
+      return;
+    }
+
     (async () => {
-      if (Object.entries(record).length == 0) {
+      if (record && Object.entries(record).length === 0) {
         const result = await getAttendanceByActivityId(activity.id);
         if (result.isSuccess) {
           setRecord(result.data!);
         }
       }
     })();
-  }, [activity]);
+  }, [record, activity]);
 
   return record;
 }

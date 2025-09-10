@@ -1,5 +1,6 @@
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
+import activityUpdateMiddleware from "./activity-update-middleware";
 import memberUpdateMiddleware from "./member-update-middleware";
 import activitesReducer from "./reducers/activity-reducer";
 import memberListReducer from "./reducers/member-list-reducer";
@@ -12,7 +13,9 @@ const rootReducer = combineReducers({
 const store = configureStore({
   reducer: rootReducer,
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().prepend(memberUpdateMiddleware.middleware),
+    getDefaultMiddleware()
+      .prepend(memberUpdateMiddleware.middleware)
+      .prepend(activityUpdateMiddleware.middleware),
 });
 
 export type AppDispatch = typeof store.dispatch;

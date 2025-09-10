@@ -63,7 +63,7 @@ export default function HomeScreen() {
     } else {
       return memberAttendanceStatusSorting(memberRecord, attendancesRecord);
     }
-  }, [selectedDate, activity, sorting, attendaceFilter]);
+  }, [activity, attendancesRecord, memberRecord, sorting, attendaceFilter]);
 
   const attendanceNumber: [number, number, number, number, number] =
     useMemo(() => {

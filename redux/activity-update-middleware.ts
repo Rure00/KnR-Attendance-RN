@@ -8,20 +8,32 @@ import {
 import {
   fetchCreateActivity,
   fetchDeleteActivity,
+  fetchGetActivityWhen,
   fetchUpdateActivity,
 } from "./reducers/activity-thunk";
 
-const memberUpdateMiddleware = createListenerMiddleware();
+const activityUpdateMiddleware = createListenerMiddleware();
 
-memberUpdateMiddleware.startListening({
+activityUpdateMiddleware.startListening({
   predicate: (action, currentState, previousState) =>
     isAsyncThunkAction(
+      fetchGetActivityWhen,
       fetchCreateActivity,
       fetchUpdateActivity,
       fetchDeleteActivity
     )(action),
   effect: async (action, listenerApi) => {
-    if (fetchCreateActivity.fulfilled.match(action)) {
+    Logger.debug(`🔥 listener received action: ${action.type}`, action);
+
+    if (fetchGetActivityWhen.fulfilled.match(action)) {
+      const activityResult = action.payload;
+      if (activityResult.isSuccess) {
+        listenerApi.dispatch(updateCachedActivity(activityResult.data!));
+        Logger.debug(`fetchGetActivityWhen: ${stringify(activityResult.data)}`);
+      } else {
+        Logger.info(`fetchGetActivityWhen fail`);
+      }
+    } else if (fetchCreateActivity.fulfilled.match(action)) {
       const activityResult = action.payload;
       if (activityResult.isSuccess) {
         listenerApi.dispatch(updateCachedActivity(activityResult.data!));
@@ -50,4 +62,4 @@ memberUpdateMiddleware.startListening({
   },
 });
 
-export default memberUpdateMiddleware;
+export default activityUpdateMiddleware;

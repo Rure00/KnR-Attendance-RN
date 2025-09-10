@@ -7,11 +7,11 @@ import { changeAttendance, fetchGetActivityWhen } from "./activity-thunk";
 
 interface ActivityState {
   // Date to AttendanceHistory
-  activites: Record<string, Activity>;
+  activities: Record<string, Activity>;
 }
 
 const initialState: ActivityState = {
-  activites: {},
+  activities: {},
 };
 
 const activitesReducer = createSlice({
@@ -23,8 +23,8 @@ const activitesReducer = createSlice({
 
       Logger.debug(`updateCachedActivity: ${stringify(newActivity)}`);
 
-      state.activites = {
-        ...state.activites,
+      state.activities = {
+        ...state.activities,
         [dateToDotSeparated(newActivity.date)]: newActivity,
       };
     },
@@ -34,8 +34,8 @@ const activitesReducer = createSlice({
       Logger.debug(`removeCachedActivity: ${stringify(removedActivityDate)}`);
 
       const { [dateToDotSeparated(removedActivityDate)]: _, ...rest } =
-        state.activites;
-      state.activites = rest;
+        state.activities;
+      state.activities = rest;
     },
   },
   extraReducers: (builder) => {
@@ -44,22 +44,24 @@ const activitesReducer = createSlice({
         Logger.info(`fetchGetActivityWhen fail...`);
         return;
       }
-      const activity = payload.data!;
+      const activity = payload.data;
 
       Logger.debug(`fetchGetActivityWhen: ${stringify(activity)}`);
 
-      state.activites = {
-        ...state.activites,
-        [dateToDotSeparated(activity.date)]: activity,
-      };
+      if (activity !== undefined) {
+        state.activities = {
+          ...state.activities,
+          [dateToDotSeparated(activity.date)]: activity,
+        };
+      }
 
-      Logger.debug(stringify(state.activites));
+      Logger.debug(stringify(state.activities));
     });
     builder
       .addCase(changeAttendance.pending, (state, thing) => {
         const { activityId, userId, attendanceEntry } = thing.meta.arg;
-        const dateKey = Object.keys(state.activites).find(
-          (key) => state.activites[key].id === activityId
+        const dateKey = Object.keys(state.activities).find(
+          (key) => state.activities[key].id === activityId
         );
         if (!dateKey) {
           Logger.info(`changeAttendance: dateKey not found`);
@@ -67,7 +69,7 @@ const activitesReducer = createSlice({
         }
 
         Logger.debug(`changeAttendance: ${stringify(dateKey)}`);
-        state.activites[dateKey].attendance[userId] = attendanceEntry;
+        state.activities[dateKey].attendance[userId] = attendanceEntry;
       })
       .addCase(changeAttendance.rejected, (state, action) => {
         // Retry or Undo state.
