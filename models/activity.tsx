@@ -1,14 +1,14 @@
 import { AttendanceStatus } from "./attendace-status";
 
 export interface AttendanceEntry {
-  createdAt: Date;
+  createdAt: string;
   status: AttendanceStatus;
   note?: string;
 }
 
 export interface Activity {
   id: string;
-  date: Date;
+  date: string;
   attended: number;
   late: number;
   notAttended: number;

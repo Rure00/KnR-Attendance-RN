@@ -25,15 +25,15 @@ const activitesReducer = createSlice({
 
       state.activities = {
         ...state.activities,
-        [dateToDotSeparated(newActivity.date)]: newActivity,
+        [newActivity.date]: newActivity,
       };
     },
-    removeCachedActivity(state, action: PayloadAction<Date>) {
+    removeCachedActivity(state, action: PayloadAction<string>) {
       const removedActivityDate = action.payload;
 
       Logger.debug(`removeCachedActivity: ${stringify(removedActivityDate)}`);
 
-      const { [dateToDotSeparated(removedActivityDate)]: _, ...rest } =
+      const { removedActivityDate: _, ...rest } =
         state.activities;
       state.activities = rest;
     },
@@ -51,7 +51,7 @@ const activitesReducer = createSlice({
       if (activity !== undefined) {
         state.activities = {
           ...state.activities,
-          [dateToDotSeparated(activity.date)]: activity,
+          [activity.date]: activity,
         };
       }
 

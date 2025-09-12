@@ -1,5 +1,6 @@
 import { Activity, AttendanceEntry } from "@/models/activity";
 import { AttendanceStatus } from "@/models/attendace-status";
+import { dateToDotSeparated } from "@/utils/dateToDotSeparated";
 import { Logger } from "@/utils/Logger";
 import { stringify } from "@/utils/stringify";
 import {
@@ -10,7 +11,6 @@ import {
   getDoc,
   getDocs,
   query,
-  Timestamp,
   updateDoc,
   where,
   writeBatch,
@@ -33,8 +33,8 @@ export async function getAllActivities(): Promise<Result<Activity[]>> {
     const activities: Activity[] = await Promise.all(
       activitySnapshot.docs.map(async (doc) => {
         const data = doc.data();
-        const ts = data.date as Timestamp;
-        return fetchActivityEntity(doc.id, ts.toDate());
+        const dateStr = data.date;
+        return fetchActivityEntity(doc.id, dateStr);
       })
     );
     return {
@@ -53,6 +53,7 @@ export async function getAllActivities(): Promise<Result<Activity[]>> {
 }
 
 export async function getActivityById(id: string): Promise<Result<Activity>> {
+  Logger.debug(`getActivityById starts`)
   try {
     const activityDoc = await getDoc(doc(db, ACTIVITY_COLLECTION, id));
 
@@ -64,8 +65,8 @@ export async function getActivityById(id: string): Promise<Result<Activity>> {
         data: undefined,
       };
     } else {
-      const ts = activityDoc.data()!.date as Timestamp;
-      const activity = await fetchActivityEntity(id, ts.toDate());
+      const dateStr = activityDoc.data()!.date;
+      const activity = await fetchActivityEntity(id, dateStr);
 
       return {
         message: "",
@@ -85,23 +86,13 @@ export async function getActivityById(id: string): Promise<Result<Activity>> {
 
 export async function getActivityByDate(date: Date): Promise<Result<Activity>> {
   try {
-    const startOfDay = new Date(date);
-    startOfDay.setHours(0, 0, 0, 0);
-
-    const endOfDay = new Date(date);
-    endOfDay.setHours(23, 59, 59, 999);
-
+    const dateQuery = dateToDotSeparated(date);
     const q = query(
       collection(db, ACTIVITY_COLLECTION),
-      where(DATE_FIELD, `>=`, Timestamp.fromDate(startOfDay)),
-      where(DATE_FIELD, `<=`, Timestamp.fromDate(endOfDay))
+      where(DATE_FIELD, `==`, dateQuery)
     );
 
     const querySnapshot = await getDocs(q);
-
-    Logger.debug(
-      `getActivityByDate: ${stringify(startOfDay)}~${stringify(endOfDay)}`
-    );
 
     if (querySnapshot.empty) {
       Logger.info(`getActivityByDate: querySnapshot is empty.`);
@@ -112,15 +103,15 @@ export async function getActivityByDate(date: Date): Promise<Result<Activity>> {
         data: undefined,
       };
     } else {
+      Logger.info(`getActivityByDate: getDocs success.`);
+
       const activity = await Promise.all(
         querySnapshot.docs.map(async (doc) => {
-          Logger.debug(`getActivityByDate: ${stringify(doc.data())}`);
-          const ts = doc.data().date as Timestamp;
-          return fetchActivityEntity(doc.id, ts.toDate());
+          return fetchActivityEntity(doc.id, dateQuery);
         })
       );
 
-      Logger.debug(`getActivityByDate: ${activity}`);
+      Logger.debug(`getActivityByDate success: ${stringify(activity)}`);
 
       return {
         message: "",
@@ -140,7 +131,8 @@ export async function getActivityByDate(date: Date): Promise<Result<Activity>> {
 
 export async function createNewActivity(date: Date): Promise<Result<Activity>> {
   try {
-    const entity = { date: date };
+    const dateStr = dateToDotSeparated(date);
+    const entity = { date: dateStr };
 
     const activityDocs = await addDoc(
       collection(db, ACTIVITY_COLLECTION),
@@ -149,7 +141,7 @@ export async function createNewActivity(date: Date): Promise<Result<Activity>> {
     await setAttendanceDefault(activityDocs.id);
 
     // fetch
-    const activity = await fetchActivityEntity(activityDocs.id, date);
+    const activity = await fetchActivityEntity(activityDocs.id, dateStr);
     return {
       message: "",
       isSuccess: true,
@@ -210,9 +202,20 @@ export async function updateActivity(
   }
 }
 
-async function fetchActivityEntity(id: string, date: Date): Promise<Activity> {
+async function fetchActivityEntity(
+  id: string,
+  date: string
+): Promise<Activity> {
   const attendances = await getAttendanceByActivityId(id);
-  const members = Object.entries(attendances.data!.attendance);
+  if (!attendances.isSuccess) {
+    const msg = "fetchActivityEntity: getAttendanceByActivityId fail"
+    Logger.error(msg)
+    throw new Error(msg);
+  } else {
+    Logger.debug("fetchActivityEntity: getAttendanceByActivityId success")
+  }
+
+  const attedanceArray = Object.entries(attendances.data!);
 
   let entire = 0;
   let attended = 0;
@@ -220,7 +223,7 @@ async function fetchActivityEntity(id: string, date: Date): Promise<Activity> {
   let notAttended = 0;
   let unexcused = 0;
 
-  members.forEach((it) => {
+  attedanceArray.forEach((it) => {
     switch (it[1].status) {
       case "참석":
         attended++;
@@ -256,7 +259,7 @@ async function setAttendanceDefault(activityId: string): Promise<boolean> {
 
     (await getAllMembers()).data?.forEach((member) => {
       attendanceEntries[member.id] = {
-        createdAt: new Date(),
+        createdAt: dateToDotSeparated(new Date()),
         status: "불참" as AttendanceStatus,
       };
     });

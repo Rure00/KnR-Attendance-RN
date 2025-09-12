@@ -129,7 +129,6 @@ export default function HomeScreen() {
               member={item}
               attendanceStatus={attendancesRecord[item.id].status}
               onLongPress={() => {
-                Logger.debug(`long press: ${item.name}`);
                 router.push(`/member-detail/${item.id}`);
               }}
               onPressed={(member) => {
