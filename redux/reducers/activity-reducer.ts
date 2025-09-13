@@ -1,5 +1,4 @@
 import { Activity } from "@/models/activity";
-import { dateToDotSeparated } from "@/utils/dateToDotSeparated";
 import { Logger } from "@/utils/Logger";
 import { stringify } from "@/utils/stringify";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
@@ -33,8 +32,7 @@ const activitesReducer = createSlice({
 
       Logger.debug(`removeCachedActivity: ${stringify(removedActivityDate)}`);
 
-      const { removedActivityDate: _, ...rest } =
-        state.activities;
+      const { removedActivityDate: _, ...rest } = state.activities;
       state.activities = rest;
     },
   },

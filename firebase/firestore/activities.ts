@@ -250,6 +250,7 @@ async function fetchActivityEntity(
     late,
     notAttended,
     unexcused,
+    attendance: attendances.data
   } as Activity;
 }
 
