@@ -15,5 +15,5 @@ export function stringify(obj: any, indent = 2): string {
       return value;
     },
     indent
-  ).replace(/\\n/g, "\n");
+  );
 }

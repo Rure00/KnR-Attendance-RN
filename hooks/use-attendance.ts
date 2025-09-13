@@ -3,7 +3,7 @@ import { Activity, AttendanceEntry } from "@/models/activity";
 import { useEffect, useState } from "react";
 
 export function useAttendance(
-  activity?: Activity
+  activity: Activity | undefined
 ): Record<string, AttendanceEntry> | undefined {
   const [record, setRecord] = useState<
     Record<string, AttendanceEntry> | undefined

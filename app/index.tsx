@@ -5,7 +5,6 @@ import MemberItem from "@/components/member-item";
 import { colors } from "@/constants/colors";
 import { globalStyles } from "@/constants/styles";
 import { useActivity } from "@/hooks/use-activity";
-import { useAttendance } from "@/hooks/use-attendance";
 import { useMemberRecord } from "@/hooks/use-member-record";
 import { AttendanceStatus, statuses } from "@/models/attendace-status";
 import { Member } from "@/models/member";
@@ -40,7 +39,9 @@ export default function HomeScreen() {
 
   const activity = useActivity(selectedDate);
   const memberRecord = useMemberRecord();
-  const attendancesRecord = useAttendance(activity);
+  const attendancesRecord = useMemo(() => {
+    return activity?.attendance;
+  }, [activity]);
 
   const [selectedMember, setMember] = useState<Member | null>();
 
@@ -67,33 +68,24 @@ export default function HomeScreen() {
 
   const attendanceNumber: [number, number, number, number, number] =
     useMemo(() => {
-      if (!activity || !attendancesRecord) return [0, 0, 0, 0, 0];
+      if (!activity) return [0, 0, 0, 0, 0];
+      return [
+        activity.entire,
+        activity.attended,
+        activity.notAttended,
+        activity.late,
+        activity.unexcused,
+      ];
+    }, [activity]);
 
-      const values = Object.entries(attendancesRecord).map(
-        ([id, attendanceEntry]) => attendanceEntry
-      );
-
-      const result: [number, number, number, number, number] = [0, 0, 0, 0, 0];
-      result[0] = values.length;
-
-      values.forEach((it) => {
-        switch (it.status) {
-          case "참석":
-            result[1]++;
-            break;
-          case "불참":
-            result[2]++;
-            break;
-          case "지각":
-            result[3]++;
-            break;
-          case "무단":
-            result[4]++;
-            break;
-        }
-      });
-      return result;
-    }, [activity, attendancesRecord]);
+  Logger.debug(`HomeScreen: activity -> ${stringify(activity)}`);
+  Logger.debug(
+    `HomeScreen: attendancesRecord -> ${stringify(attendancesRecord)}`
+  );
+  Logger.debug(
+    `HomeScreen: attendanceNumber -> ${stringify(attendanceNumber)}`
+  );
+  Logger.debug(`HomeScreen: memberArray -> ${stringify(memberArray)}`);
 
   const bottomRef = useRef<BottomSheet>(null);
   const handleSheetChanges = (status: AttendanceStatus) => {
